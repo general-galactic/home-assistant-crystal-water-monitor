@@ -1,0 +1,41 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Crystal Water Monitor",
+        "description": "Enter your Crystal Connect API key. [Get an API key]({api_key_url})",
+        "data": {
+          "api_key": "API Key",
+          "environment": "Environment",
+          "scan_interval": "Poll interval (minutes)"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Invalid API key. Check your key and try again.",
+      "cannot_connect": "Could not connect to the Crystal API. Check your internet connection.",
+      "unknown": "An unexpected error occurred."
+    },
+    "abort": {
+      "already_configured": "This API key is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Crystal Water Monitor Settings",
+        "description": "Update your API key or poll interval. [Get an API key]({api_key_url})",
+        "data": {
+          "api_key": "API Key",
+          "environment": "Environment",
+          "scan_interval": "Poll interval (minutes)"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Invalid API key. Check your key and try again.",
+      "cannot_connect": "Could not connect to the Crystal API. Check your internet connection.",
+      "unknown": "An unexpected error occurred."
+    }
+  }
+}
