@@ -1,5 +1,7 @@
 # Crystal Water Monitor — Home Assistant Integration
 
+> **Proprietary Software** — This integration is not open source. Copying, modification, or redistribution is prohibited. See [LICENSE](LICENSE) for details.
+
 A Home Assistant custom component that surfaces pool, hot tub, and swim spa water chemistry from [Crystal Water Monitor](https://www.crystalwatermonitor.app) devices as native HA sensors.
 
 ## Prerequisites
