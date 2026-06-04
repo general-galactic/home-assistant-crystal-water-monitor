@@ -8,23 +8,6 @@ A Home Assistant custom component (integration) for the **Crystal Water Monitor*
 
 The integration connects to the **Crystal Connect API**, a REST proxy in front of the Crystal platform.
 
-## API
-
-- **Production base URL**: `https://connect.crystalwatermonitor.app`
-- **Dev base URL**: `https://dev.connect.crystalwatermonitor.app`
-- **Auth**: `x-api-key` header — one key per account, scoped to that account only
-- **Rate limit**: 1 request per 15 minutes per key (AWS API Gateway); 10 req / 5-min window per IP (WAF → 429)
-- **Poll interval**: minimum 15 min; default 20 min (monitor only uploads every 20 min anyway)
-
-### Key endpoints
-
-| Method | Path | Purpose |
-|--------|------|---------|
-| GET | `/connect/v1/vessels` | List all vessels for the account |
-| GET | `/connect/v1/vessels/{vesselId}` | Full detail + readings + actions for one vessel |
-
-The vessel detail response is the core data structure. `readings` is a map of reading type → reading object; keys are optional and must be handled gracefully. All temperature values (`disc.tempC`, `waterTemp.value`) are in °C.
-
 ### Reading object fields
 
 `readingType`, `value`, `range {low, high}`, `unit`, `unitTitle`, `date` (ISO8601), `source` (`monitor` | `report` | `computed`), `status` (`really_low` | `low` | `ok` | `high` | `really_high` | `invalid` | `unknown`), `statusSinceDate`, `abbreviation`, `title`

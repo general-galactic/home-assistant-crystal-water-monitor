@@ -54,7 +54,7 @@ def _device_info(vessel_data: dict) -> DeviceInfo:
         name=vessel_data.get("disc", {}).get("name", f"Vessel {vessel_id}"),
         manufacturer="Crystal Water Monitor",
         model=vessel_data.get("type", "Pool Monitor"),
-        configuration_url="https://www.crystalwatermonitor.app",
+        configuration_url="https://www.crystalwatermonitor.com",
     )
 
 
