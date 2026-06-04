@@ -21,21 +21,21 @@ WATER_STATUS_MAP = {
     "gray": "Unknown",
 }
 
-# (reading_type, friendly_name, unit, device_class, entity_category)
-READING_SENSORS: list[tuple[str, str, str | None, str | None, str | None]] = [
-    ("ph", "pH", "pH", None, None),
-    ("orp", "ORP", "mV", None, None),
-    ("waterTemp", "Water Temperature", "°C", "temperature", None),
-    ("freeChlorine", "Free Chlorine", "ppm", None, None),
-    ("totalChlorine", "Total Chlorine", "ppm", None, None),
-    ("totalAlkalinity", "Total Alkalinity", "ppm", None, None),
-    ("totalHardness", "Total Hardness", "ppm", None, None),
-    ("cyanuricAcid", "Cyanuric Acid", "ppm", None, None),
-    ("bromine", "Bromine", "ppm", None, None),
-    ("salt", "Salt", "ppm", None, None),
-    ("totalDissolvedSolids", "Total Dissolved Solids", "ppm", None, None),
-    ("phosphates", "Phosphates", "ppb", None, None),
-    ("lsi", "LSI", None, None, None),
-    ("battery", "Battery", "mV", None, "diagnostic"),
-    ("wifiRssi", "WiFi Signal", "dBm", "signal_strength", "diagnostic"),
+# (reading_type, friendly_name, unit, device_class, entity_category, icon)
+READING_SENSORS: list[tuple[str, str, str | None, str | None, str | None, str | None]] = [
+    ("ph", "pH", "pH", None, None, "mdi:ph"),
+    ("orp", "ORP", "mV", None, None, "mdi:lightning-bolt"),
+    ("waterTemp", "Water Temperature", "°C", "temperature", None, "mdi:thermometer-water"),
+    ("freeChlorine", "Free Chlorine", "ppm", None, None, "mdi:flask"),
+    ("totalChlorine", "Total Chlorine", "ppm", None, None, "mdi:flask-outline"),
+    ("totalAlkalinity", "Total Alkalinity", "ppm", None, None, "mdi:test-tube"),
+    ("totalHardness", "Total Hardness", "ppm", None, None, "mdi:water-opacity"),
+    ("cyanuricAcid", "Cyanuric Acid", "ppm", None, None, "mdi:shield-sun"),
+    ("bromine", "Bromine", "ppm", None, None, "mdi:atom"),
+    ("salt", "Salt", "ppm", None, None, "mdi:shaker-outline"),
+    ("totalDissolvedSolids", "Total Dissolved Solids", "ppm", None, None, "mdi:water-percent"),
+    ("phosphates", "Phosphates", "ppb", None, None, "mdi:leaf"),
+    ("lsi", "LSI", None, None, None, "mdi:scale-balance"),
+    ("battery", "Battery", "mV", None, "diagnostic", "mdi:battery"),
+    ("wifiRssi", "WiFi Signal", "dBm", "signal_strength", "diagnostic", None),
 ]

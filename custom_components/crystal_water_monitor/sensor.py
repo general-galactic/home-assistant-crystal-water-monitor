@@ -35,9 +35,9 @@ async def async_setup_entry(
         entities.append(LastSyncedSensor(coordinator, vessel_id, vessel_data))
         entities.append(MonitorSerialSensor(coordinator, vessel_id, vessel_data))
         entities.append(SensorSerialSensor(coordinator, vessel_id, vessel_data))
-        for reading_type, name, unit, device_class, entity_category in READING_SENSORS:
+        for reading_type, name, unit, device_class, entity_category, icon in READING_SENSORS:
             entities.append(
-                ReadingSensor(coordinator, vessel_id, vessel_data, reading_type, name, unit, device_class, entity_category)
+                ReadingSensor(coordinator, vessel_id, vessel_data, reading_type, name, unit, device_class, entity_category, icon)
             )
 
     async_add_entities(entities)
@@ -88,7 +88,8 @@ class CrystalSensorBase(CoordinatorEntity[CrystalDataUpdateCoordinator], SensorE
         super().__init__(coordinator)
         self._vessel_id = vessel_id
         self._attr_device_info = _device_info(vessel_data)
-        self._attr_icon = _vessel_icon(vessel_data)
+        if not self.__class__.__dict__.get("_attr_icon"):
+            self._attr_icon = _vessel_icon(vessel_data)
 
     @property
     def _vessel(self) -> ConnectApiAccountVesselV1 | None:
@@ -120,8 +121,6 @@ class WaterStatusSensor(CrystalSensorBase):
             "text": disc.text,
             "tempC": disc.temp_c,
             "lastUpdatedDate": _last_updated(vessel),
-            "monitorSerialNumber": vessel.monitor_serial_number,
-            "sensorSerialNumber": vessel.sensor_serial_number,
             "waterStatusColor": disc.water_status_color.value,
             "actions": [a.to_dict() for a in vessel.actions],
         }
@@ -148,7 +147,7 @@ class ActionsPendingSensor(CrystalSensorBase):
 
 
 class LastUpdatedSensor(CrystalSensorBase):
-    _attr_icon = "mdi:clock-outline"
+    _attr_icon = "mdi:history"
     _attr_device_class = SensorDeviceClass.TIMESTAMP
     _attr_entity_category = EntityCategory.DIAGNOSTIC
 
@@ -172,7 +171,7 @@ class LastUpdatedSensor(CrystalSensorBase):
 
 
 class LastSyncedSensor(CrystalSensorBase):
-    _attr_icon = "mdi:cloud-check-outline"
+    _attr_icon = "mdi:cloud-sync-outline"
     _attr_device_class = SensorDeviceClass.TIMESTAMP
     _attr_entity_category = EntityCategory.DIAGNOSTIC
 
@@ -187,7 +186,7 @@ class LastSyncedSensor(CrystalSensorBase):
 
 
 class MonitorSerialSensor(CrystalSensorBase):
-    _attr_icon = "mdi:identifier"
+    _attr_icon = "mdi:barcode"
     _attr_entity_category = EntityCategory.DIAGNOSTIC
 
     def __init__(self, coordinator, vessel_id, vessel_data: ConnectApiAccountVesselV1):
@@ -202,7 +201,7 @@ class MonitorSerialSensor(CrystalSensorBase):
 
 
 class SensorSerialSensor(CrystalSensorBase):
-    _attr_icon = "mdi:identifier"
+    _attr_icon = "mdi:barcode-scan"
     _attr_entity_category = EntityCategory.DIAGNOSTIC
 
     def __init__(self, coordinator, vessel_id, vessel_data: ConnectApiAccountVesselV1):
@@ -227,12 +226,15 @@ class ReadingSensor(CrystalSensorBase):
         unit: str | None,
         device_class: str | None,
         entity_category: str | None,
+        icon: str | None = None,
     ) -> None:
         super().__init__(coordinator, vessel_id, vessel_data)
         self._reading_type = reading_type
         self._attr_unique_id = f"{vessel_id}_{reading_type}"
         self._attr_name = friendly_name
         self._attr_native_unit_of_measurement = unit
+        if icon:
+            self._attr_icon = icon
         if device_class:
             try:
                 self._attr_device_class = SensorDeviceClass(device_class)
