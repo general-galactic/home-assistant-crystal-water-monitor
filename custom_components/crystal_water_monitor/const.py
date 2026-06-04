@@ -7,7 +7,7 @@ def _is_dev_build() -> bool:
     manifest_path = os.path.join(os.path.dirname(__file__), "manifest.json")
     with open(manifest_path) as f:
         version = json.load(f).get("version", "")
-    return "-" in version
+    return ".dev" in version
 
 IS_DEV_BUILD = _is_dev_build()
 
