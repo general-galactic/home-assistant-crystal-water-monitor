@@ -5,6 +5,7 @@ from typing import Any
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -27,9 +28,9 @@ async def async_setup_entry(
     for vessel_id, vessel_data in coordinator.vessel_data.items():
         entities.append(WaterStatusSensor(coordinator, vessel_id, vessel_data))
         entities.append(ActionsPendingSensor(coordinator, vessel_id, vessel_data))
-        for reading_type, name, unit, device_class in READING_SENSORS:
+        for reading_type, name, unit, device_class, entity_category in READING_SENSORS:
             entities.append(
-                ReadingSensor(coordinator, vessel_id, vessel_data, reading_type, name, unit, device_class)
+                ReadingSensor(coordinator, vessel_id, vessel_data, reading_type, name, unit, device_class, entity_category)
             )
 
     async_add_entities(entities)
@@ -53,6 +54,7 @@ def _device_info(vessel_data: dict) -> DeviceInfo:
         name=vessel_data.get("disc", {}).get("name", f"Vessel {vessel_id}"),
         manufacturer="Crystal Water Monitor",
         model=vessel_data.get("type", "Pool Monitor"),
+        configuration_url="https://www.crystalwatermonitor.app",
     )
 
 
@@ -90,8 +92,7 @@ class WaterStatusSensor(CrystalSensorBase):
     def extra_state_attributes(self) -> dict[str, Any]:
         disc = self._vessel.get("disc", {})
         return {
-            "last_updated_text": disc.get("lastUpdatedText"),
-            "status_text": disc.get("text"),
+            **disc,
             "actions": self._vessel.get("actions", []),
         }
 
@@ -125,6 +126,7 @@ class ReadingSensor(CrystalSensorBase):
         friendly_name: str,
         unit: str | None,
         device_class: str | None,
+        entity_category: str | None,
     ) -> None:
         super().__init__(coordinator, vessel_id, vessel_data)
         self._reading_type = reading_type
@@ -137,6 +139,8 @@ class ReadingSensor(CrystalSensorBase):
                 self._attr_device_class = SensorDeviceClass(device_class)
             except ValueError:
                 pass
+        if entity_category:
+            self._attr_entity_category = EntityCategory(entity_category)
 
     @property
     def _reading(self) -> dict:
@@ -146,10 +150,10 @@ class ReadingSensor(CrystalSensorBase):
     def native_value(self) -> float | None:
         r = self._reading
         if "value" in r:
-            return r["value"]
+            return round(r["value"], 2)
         rng = r.get("range")
         if rng and "low" in rng and "high" in rng:
-            return (rng["low"] + rng["high"]) / 2
+            return round((rng["low"] + rng["high"]) / 2, 2)
         return None
 
     @property

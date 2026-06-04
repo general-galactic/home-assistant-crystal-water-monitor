@@ -23,21 +23,21 @@ WATER_STATUS_MAP = {
     "gray": "Unknown",
 }
 
-# (reading_type, friendly_name, unit, device_class)
-READING_SENSORS: list[tuple[str, str, str | None, str | None]] = [
-    ("ph", "pH", "pH", None),
-    ("orp", "ORP", "mV", None),
-    ("waterTemp", "Water Temperature", "°C", "temperature"),
-    ("freeChlorine", "Free Chlorine", "ppm", None),
-    ("totalChlorine", "Total Chlorine", "ppm", None),
-    ("totalAlkalinity", "Total Alkalinity", "ppm", None),
-    ("totalHardness", "Total Hardness", "ppm", None),
-    ("cyanuricAcid", "Cyanuric Acid", "ppm", None),
-    ("bromine", "Bromine", "ppm", None),
-    ("salt", "Salt", "ppm", None),
-    ("totalDissolvedSolids", "Total Dissolved Solids", "ppm", None),
-    ("phosphates", "Phosphates", "ppb", None),
-    ("lsi", "LSI", None, None),
-    ("battery", "Battery", "mV", None),
-    ("wifiRssi", "WiFi Signal", "dBm", "signal_strength"),
+# (reading_type, friendly_name, unit, device_class, entity_category)
+READING_SENSORS: list[tuple[str, str, str | None, str | None, str | None]] = [
+    ("ph", "pH", "pH", None, None),
+    ("orp", "ORP", "mV", None, None),
+    ("waterTemp", "Water Temperature", "°C", "temperature", None),
+    ("freeChlorine", "Free Chlorine", "ppm", None, None),
+    ("totalChlorine", "Total Chlorine", "ppm", None, None),
+    ("totalAlkalinity", "Total Alkalinity", "ppm", None, None),
+    ("totalHardness", "Total Hardness", "ppm", None, None),
+    ("cyanuricAcid", "Cyanuric Acid", "ppm", None, None),
+    ("bromine", "Bromine", "ppm", None, None),
+    ("salt", "Salt", "ppm", None, None),
+    ("totalDissolvedSolids", "Total Dissolved Solids", "ppm", None, None),
+    ("phosphates", "Phosphates", "ppb", None, None),
+    ("lsi", "LSI", None, None, None),
+    ("battery", "Battery", "mV", None, "diagnostic"),
+    ("wifiRssi", "WiFi Signal", "dBm", "signal_strength", "diagnostic"),
 ]
