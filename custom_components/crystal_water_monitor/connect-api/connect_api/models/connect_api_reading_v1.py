@@ -20,10 +20,10 @@ import json
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, StrictFloat, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional, Union
+from connect_api.models.connect_api_reading_types_v1 import ConnectAPIReadingTypesV1
 from connect_api.models.reading_range_v1 import ReadingRangeV1
 from connect_api.models.reading_sources_v1 import ReadingSourcesV1
 from connect_api.models.reading_statuses import ReadingStatuses
-from connect_api.models.reading_types_v1 import ReadingTypesV1
 from connect_api.models.reading_units import ReadingUnits
 from typing import Optional, Set
 from typing_extensions import Self
@@ -33,7 +33,7 @@ class ConnectAPIReadingV1(BaseModel):
     """
     ConnectAPIReadingV1
     """ # noqa: E501
-    reading_type: ReadingTypesV1 = Field(alias="readingType")
+    reading_type: ConnectAPIReadingTypesV1 = Field(alias="readingType")
     value: Optional[Union[StrictFloat, StrictInt]] = None
     range: Optional[ReadingRangeV1] = None
     unit: ReadingUnits

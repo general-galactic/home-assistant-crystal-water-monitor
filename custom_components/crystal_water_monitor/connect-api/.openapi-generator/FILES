@@ -6,6 +6,7 @@ connect_api/api_client.py
 connect_api/api_response.py
 connect_api/configuration.py
 connect_api/docs/ConnectAPIActionV1.md
+connect_api/docs/ConnectAPIReadingTypesV1.md
 connect_api/docs/ConnectAPIReadingV1.md
 connect_api/docs/ConnectAPIReadingsV1.md
 connect_api/docs/ConnectApiAccountVesselDiscV1.md
@@ -17,8 +18,8 @@ connect_api/docs/DefaultApi.md
 connect_api/docs/ReadingRangeV1.md
 connect_api/docs/ReadingSourcesV1.md
 connect_api/docs/ReadingStatuses.md
-connect_api/docs/ReadingTypesV1.md
 connect_api/docs/ReadingUnits.md
+connect_api/docs/WaterStatusColor.md
 connect_api/exceptions.py
 connect_api/models/__init__.py
 connect_api/models/connect_api_account_vessel_disc_v1.py
@@ -26,14 +27,15 @@ connect_api/models/connect_api_account_vessel_summary_v1.py
 connect_api/models/connect_api_account_vessel_v1.py
 connect_api/models/connect_api_action_v1.py
 connect_api/models/connect_api_get_account_vessels_v1.py
+connect_api/models/connect_api_reading_types_v1.py
 connect_api/models/connect_api_reading_v1.py
 connect_api/models/connect_api_readings_v1.py
 connect_api/models/connect_v1_vessels_vessel_id_get400_response.py
 connect_api/models/reading_range_v1.py
 connect_api/models/reading_sources_v1.py
 connect_api/models/reading_statuses.py
-connect_api/models/reading_types_v1.py
 connect_api/models/reading_units.py
+connect_api/models/water_status_color.py
 connect_api/rest.py
 connect_api/test/__init__.py
 connect_api/test/test_connect_api_account_vessel_disc_v1.py
@@ -41,6 +43,7 @@ connect_api/test/test_connect_api_account_vessel_summary_v1.py
 connect_api/test/test_connect_api_account_vessel_v1.py
 connect_api/test/test_connect_api_action_v1.py
 connect_api/test/test_connect_api_get_account_vessels_v1.py
+connect_api/test/test_connect_api_reading_types_v1.py
 connect_api/test/test_connect_api_reading_v1.py
 connect_api/test/test_connect_api_readings_v1.py
 connect_api/test/test_connect_v1_vessels_vessel_id_get400_response.py
@@ -48,6 +51,6 @@ connect_api/test/test_default_api.py
 connect_api/test/test_reading_range_v1.py
 connect_api/test/test_reading_sources_v1.py
 connect_api/test/test_reading_statuses.py
-connect_api/test/test_reading_types_v1.py
 connect_api/test/test_reading_units.py
+connect_api/test/test_water_status_color.py
 connect_api_README.md

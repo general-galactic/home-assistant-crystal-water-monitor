@@ -30,7 +30,6 @@ class ConnectAPIReadingsV1(BaseModel):
     """ # noqa: E501
     ph: Optional[ConnectAPIReadingV1] = None
     orp: Optional[ConnectAPIReadingV1] = None
-    long_orp: Optional[ConnectAPIReadingV1] = Field(default=None, alias="longOrp")
     water_temp: Optional[ConnectAPIReadingV1] = Field(default=None, alias="waterTemp")
     total_alkalinity: Optional[ConnectAPIReadingV1] = Field(default=None, alias="totalAlkalinity")
     total_hardness: Optional[ConnectAPIReadingV1] = Field(default=None, alias="totalHardness")
@@ -45,7 +44,7 @@ class ConnectAPIReadingsV1(BaseModel):
     battery: Optional[ConnectAPIReadingV1] = None
     smart_chlor: Optional[ConnectAPIReadingV1] = Field(default=None, alias="smartChlor")
     lsi: Optional[ConnectAPIReadingV1] = None
-    __properties: ClassVar[List[str]] = ["ph", "orp", "longOrp", "waterTemp", "totalAlkalinity", "totalHardness", "cyanuricAcid", "freeChlorine", "totalChlorine", "bromine", "totalDissolvedSolids", "salt", "phosphates", "wifiRssi", "battery", "smartChlor", "lsi"]
+    __properties: ClassVar[List[str]] = ["ph", "orp", "waterTemp", "totalAlkalinity", "totalHardness", "cyanuricAcid", "freeChlorine", "totalChlorine", "bromine", "totalDissolvedSolids", "salt", "phosphates", "wifiRssi", "battery", "smartChlor", "lsi"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -92,9 +91,6 @@ class ConnectAPIReadingsV1(BaseModel):
         # override the default output from pydantic by calling `to_dict()` of orp
         if self.orp:
             _dict['orp'] = self.orp.to_dict()
-        # override the default output from pydantic by calling `to_dict()` of long_orp
-        if self.long_orp:
-            _dict['longOrp'] = self.long_orp.to_dict()
         # override the default output from pydantic by calling `to_dict()` of water_temp
         if self.water_temp:
             _dict['waterTemp'] = self.water_temp.to_dict()
@@ -151,7 +147,6 @@ class ConnectAPIReadingsV1(BaseModel):
         _obj = cls.model_validate({
             "ph": ConnectAPIReadingV1.from_dict(obj["ph"]) if obj.get("ph") is not None else None,
             "orp": ConnectAPIReadingV1.from_dict(obj["orp"]) if obj.get("orp") is not None else None,
-            "longOrp": ConnectAPIReadingV1.from_dict(obj["longOrp"]) if obj.get("longOrp") is not None else None,
             "waterTemp": ConnectAPIReadingV1.from_dict(obj["waterTemp"]) if obj.get("waterTemp") is not None else None,
             "totalAlkalinity": ConnectAPIReadingV1.from_dict(obj["totalAlkalinity"]) if obj.get("totalAlkalinity") is not None else None,
             "totalHardness": ConnectAPIReadingV1.from_dict(obj["totalHardness"]) if obj.get("totalHardness") is not None else None,

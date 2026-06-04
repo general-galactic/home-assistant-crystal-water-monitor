@@ -17,8 +17,10 @@ import pprint
 import re  # noqa: F401
 import json
 
+from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, StrictFloat, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional, Union
+from connect_api.models.water_status_color import WaterStatusColor
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
@@ -29,10 +31,12 @@ class ConnectApiAccountVesselDiscV1(BaseModel):
     """ # noqa: E501
     name: StrictStr
     text: Optional[StrictStr] = None
-    last_updated_text: Optional[StrictStr] = Field(default=None, alias="lastUpdatedText")
     temp_c: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, alias="tempC")
-    water_status_color: StrictStr = Field(alias="waterStatusColor")
-    __properties: ClassVar[List[str]] = ["name", "text", "lastUpdatedText", "tempC", "waterStatusColor"]
+    water_status_color: WaterStatusColor = Field(alias="waterStatusColor")
+    last_updated_date: Optional[datetime] = Field(default=None, alias="lastUpdatedDate")
+    monitor_serial_number: Optional[StrictStr] = Field(default=None, alias="monitorSerialNumber")
+    sensor_serial_number: Optional[StrictStr] = Field(default=None, alias="sensorSerialNumber")
+    __properties: ClassVar[List[str]] = ["name", "text", "tempC", "waterStatusColor", "lastUpdatedDate", "monitorSerialNumber", "sensorSerialNumber"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -87,9 +91,11 @@ class ConnectApiAccountVesselDiscV1(BaseModel):
         _obj = cls.model_validate({
             "name": obj.get("name"),
             "text": obj.get("text"),
-            "lastUpdatedText": obj.get("lastUpdatedText"),
             "tempC": obj.get("tempC"),
-            "waterStatusColor": obj.get("waterStatusColor")
+            "waterStatusColor": obj.get("waterStatusColor"),
+            "lastUpdatedDate": obj.get("lastUpdatedDate"),
+            "monitorSerialNumber": obj.get("monitorSerialNumber"),
+            "sensorSerialNumber": obj.get("sensorSerialNumber")
         })
         return _obj
 

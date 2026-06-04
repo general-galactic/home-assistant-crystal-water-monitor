@@ -29,6 +29,7 @@ __all__ = [
     "ApiAttributeError",
     "ApiException",
     "ConnectAPIActionV1",
+    "ConnectAPIReadingTypesV1",
     "ConnectAPIReadingV1",
     "ConnectAPIReadingsV1",
     "ConnectApiAccountVesselDiscV1",
@@ -39,8 +40,8 @@ __all__ = [
     "ReadingRangeV1",
     "ReadingSourcesV1",
     "ReadingStatuses",
-    "ReadingTypesV1",
     "ReadingUnits",
+    "WaterStatusColor",
 ]
 
 # import apis into sdk package
@@ -59,6 +60,7 @@ from connect_api.exceptions import ApiException as ApiException
 
 # import models into sdk package
 from connect_api.models.connect_api_action_v1 import ConnectAPIActionV1 as ConnectAPIActionV1
+from connect_api.models.connect_api_reading_types_v1 import ConnectAPIReadingTypesV1 as ConnectAPIReadingTypesV1
 from connect_api.models.connect_api_reading_v1 import ConnectAPIReadingV1 as ConnectAPIReadingV1
 from connect_api.models.connect_api_readings_v1 import ConnectAPIReadingsV1 as ConnectAPIReadingsV1
 from connect_api.models.connect_api_account_vessel_disc_v1 import ConnectApiAccountVesselDiscV1 as ConnectApiAccountVesselDiscV1
@@ -69,6 +71,6 @@ from connect_api.models.connect_v1_vessels_vessel_id_get400_response import Conn
 from connect_api.models.reading_range_v1 import ReadingRangeV1 as ReadingRangeV1
 from connect_api.models.reading_sources_v1 import ReadingSourcesV1 as ReadingSourcesV1
 from connect_api.models.reading_statuses import ReadingStatuses as ReadingStatuses
-from connect_api.models.reading_types_v1 import ReadingTypesV1 as ReadingTypesV1
 from connect_api.models.reading_units import ReadingUnits as ReadingUnits
+from connect_api.models.water_status_color import WaterStatusColor as WaterStatusColor
 

@@ -18,9 +18,9 @@ from enum import Enum
 from typing_extensions import Self
 
 
-class ReadingTypesV1(str, Enum):
+class ConnectAPIReadingTypesV1(str, Enum):
     """
-    ReadingTypesV1
+    ConnectAPIReadingTypesV1
     """
 
     """
@@ -28,7 +28,6 @@ class ReadingTypesV1(str, Enum):
     """
     PH = 'ph'
     ORP = 'orp'
-    LONGORP = 'longOrp'
     WATERTEMP = 'waterTemp'
     TOTALALKALINITY = 'totalAlkalinity'
     TOTALHARDNESS = 'totalHardness'
@@ -39,19 +38,14 @@ class ReadingTypesV1(str, Enum):
     TOTALDISSOLVEDSOLIDS = 'totalDissolvedSolids'
     SALT = 'salt'
     PHOSPHATES = 'phosphates'
-    CPUTEMP = 'cpuTemp'
     BATTERY = 'battery'
     WIFIRSSI = 'wifiRssi'
-    CLOCKDRIFT = 'clockDrift'
     SMARTCHLOR = 'smartChlor'
     LSI = 'lsi'
-    ADJUSTEDTOTALALKALINITY = 'adjustedTotalAlkalinity'
-    CALCIUMHARDNESS = 'calciumHardness'
-    PHSTC20 = 'phSTC20'
 
     @classmethod
     def from_json(cls, json_str: str) -> Self:
-        """Create an instance of ReadingTypesV1 from a JSON string"""
+        """Create an instance of ConnectAPIReadingTypesV1 from a JSON string"""
         return cls(json.loads(json_str))
 
 

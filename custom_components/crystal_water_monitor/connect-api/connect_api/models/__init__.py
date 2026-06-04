@@ -14,6 +14,7 @@
 
 # import models into model package
 from connect_api.models.connect_api_action_v1 import ConnectAPIActionV1
+from connect_api.models.connect_api_reading_types_v1 import ConnectAPIReadingTypesV1
 from connect_api.models.connect_api_reading_v1 import ConnectAPIReadingV1
 from connect_api.models.connect_api_readings_v1 import ConnectAPIReadingsV1
 from connect_api.models.connect_api_account_vessel_disc_v1 import ConnectApiAccountVesselDiscV1
@@ -24,6 +25,6 @@ from connect_api.models.connect_v1_vessels_vessel_id_get400_response import Conn
 from connect_api.models.reading_range_v1 import ReadingRangeV1
 from connect_api.models.reading_sources_v1 import ReadingSourcesV1
 from connect_api.models.reading_statuses import ReadingStatuses
-from connect_api.models.reading_types_v1 import ReadingTypesV1
 from connect_api.models.reading_units import ReadingUnits
+from connect_api.models.water_status_color import WaterStatusColor
 
