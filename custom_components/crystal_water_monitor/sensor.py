@@ -245,7 +245,4 @@ class ReadingSensor(CrystalSensorBase):
             attrs["range_high"] = r.range.to
         if r.value is None and r.range is not None:
             attrs["is_ranged"] = True
-        vessel = self._vessel
-        if vessel and vessel.actions:
-            attrs["actions"] = [a.to_dict() for a in vessel.actions]
         return attrs

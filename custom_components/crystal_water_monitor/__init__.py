@@ -96,6 +96,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         lambda: CrystalApiClient(
             api_key=config[CONF_API_KEY],
             environment=config.get(CONF_ENVIRONMENT, "production"),
+            locale=hass.config.language,
         )
     )
     coordinator = CrystalDataUpdateCoordinator(
