@@ -8,6 +8,7 @@ from homeassistant.exceptions import ConfigEntryError
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import (
+    ConnectApiAccountVesselV1,
     CrystalApiClient,
     CrystalApiError,
     CrystalMaintenanceError,
@@ -35,10 +36,9 @@ class CrystalDataUpdateCoordinator(DataUpdateCoordinator):
             update_interval=timedelta(minutes=scan_interval),
         )
         self.client = client
-        # vessel_id -> detail dict
-        self.vessel_data: dict[int, dict] = {}
+        self.vessel_data: dict[int, ConnectApiAccountVesselV1] = {}
 
-    async def _async_update_data(self) -> dict[int, dict]:
+    async def _async_update_data(self) -> dict[int, ConnectApiAccountVesselV1]:
         try:
             vessels = await self.client.list_vessels()
         except CrystalSubscriptionError as err:
@@ -52,9 +52,9 @@ class CrystalDataUpdateCoordinator(DataUpdateCoordinator):
         except CrystalApiError as err:
             raise UpdateFailed(f"Crystal API error: {err}") from err
 
-        results: dict[int, dict] = {}
+        results: dict[int, ConnectApiAccountVesselV1] = {}
         for vessel in vessels:
-            vessel_id = vessel["vesselId"]
+            vessel_id = vessel.vessel_id
             try:
                 detail = await self.client.get_vessel(vessel_id)
                 results[vessel_id] = detail

@@ -1,7 +1,13 @@
 {
+    "python.languageServer": "Pylance",
+    "python.analysis.typeCheckingMode": "basic",
     "cSpell.words": [
+        "Chlor",
         "clientsession",
+        "cyanuric",
         "hass",
-        "homeassistant"
+        "homeassistant",
+        "Rssi",
+        "wordmark"
     ]
 }

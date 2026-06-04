@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import voluptuous as vol
 from homeassistant import config_entries
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
-
 from .api import CrystalApiClient, CrystalApiError, CrystalAuthError, CrystalNotFoundError
 from .const import (
     CONF_API_KEY,
@@ -39,10 +37,12 @@ def _options_schema(current: dict, show_env: bool) -> vol.Schema:
 
 async def _validate_api_key(hass, api_key: str, environment: str) -> str | None:
     """Returns an error key string on failure, None on success."""
-    session = async_get_clientsession(hass)
-    client = CrystalApiClient(api_key=api_key, environment=environment, session=session)
+    client = await hass.async_add_executor_job(
+        lambda: CrystalApiClient(api_key=api_key, environment=environment)
+    )
     try:
         await client.list_vessels()
+        return None
     except CrystalAuthError:
         return "invalid_auth"
     except CrystalNotFoundError:
@@ -51,7 +51,8 @@ async def _validate_api_key(hass, api_key: str, environment: str) -> str | None:
         return "cannot_connect"
     except Exception:  # noqa: BLE001
         return "unknown"
-    return None
+    finally:
+        await client.close()
 
 
 class CrystalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):

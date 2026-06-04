@@ -1,5 +1,18 @@
 # Development Guide
 
+## API Types
+
+Python TypedDicts for the Crystal Connect API response shapes live in [types.py](custom_components/crystal_water_monitor/types.py). They are generated from the OpenAPI spec at `https://dev.connect.crystalwatermonitor.app/docs/openapi.yaml`.
+
+When the API changes, regenerate them:
+
+```bash
+./scripts/generate_types.sh        # from prod spec (default)
+./scripts/generate_types.sh dev    # from dev spec
+```
+
+This requires `datamodel-code-generator` (installed automatically by the script). Review the diff after regenerating — new fields may need to be handled in `sensor.py` or `coordinator.py`.
+
 ## Installation
 
 ### Option A — HACS (recommended)

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from typing import Any
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
@@ -11,6 +12,7 @@ from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
+from .api import ConnectApiAccountVesselV1, ConnectAPIReadingV1
 from .const import DOMAIN, READING_SENSORS, WATER_STATUS_MAP
 from .coordinator import CrystalDataUpdateCoordinator
 
@@ -43,17 +45,16 @@ _VESSEL_TYPE_ICON = {
 }
 
 
-def _vessel_icon(vessel_data: dict) -> str:
-    return _VESSEL_TYPE_ICON.get(vessel_data.get("type", ""), "mdi:pool")
+def _vessel_icon(vessel_data: ConnectApiAccountVesselV1) -> str:
+    return _VESSEL_TYPE_ICON.get(vessel_data.type, "mdi:pool")
 
 
-def _device_info(vessel_data: dict) -> DeviceInfo:
-    vessel_id = vessel_data["vesselId"]
+def _device_info(vessel_data: ConnectApiAccountVesselV1) -> DeviceInfo:
     return DeviceInfo(
-        identifiers={(DOMAIN, str(vessel_id))},
-        name=vessel_data.get("disc", {}).get("name", f"Vessel {vessel_id}"),
+        identifiers={(DOMAIN, str(vessel_data.vessel_id))},
+        name=vessel_data.disc.name,
         manufacturer="Crystal Water Monitor",
-        model=vessel_data.get("type", "Pool Monitor"),
+        model=vessel_data.type,
         configuration_url="https://www.crystalwatermonitor.com",
     )
 
@@ -63,7 +64,7 @@ class CrystalSensorBase(CoordinatorEntity[CrystalDataUpdateCoordinator], SensorE
         self,
         coordinator: CrystalDataUpdateCoordinator,
         vessel_id: int,
-        vessel_data: dict,
+        vessel_data: ConnectApiAccountVesselV1,
     ) -> None:
         super().__init__(coordinator)
         self._vessel_id = vessel_id
@@ -71,29 +72,36 @@ class CrystalSensorBase(CoordinatorEntity[CrystalDataUpdateCoordinator], SensorE
         self._attr_icon = _vessel_icon(vessel_data)
 
     @property
-    def _vessel(self) -> dict:
-        return self.coordinator.vessel_data.get(self._vessel_id, {})
+    def _vessel(self) -> ConnectApiAccountVesselV1 | None:
+        return self.coordinator.vessel_data.get(self._vessel_id)
 
 
 class WaterStatusSensor(CrystalSensorBase):
     _attr_icon = "mdi:water-check"
 
-    def __init__(self, coordinator, vessel_id, vessel_data):
+    def __init__(self, coordinator, vessel_id, vessel_data: ConnectApiAccountVesselV1):
         super().__init__(coordinator, vessel_id, vessel_data)
         self._attr_unique_id = f"{vessel_id}_water_status"
-        self._attr_name = f"{vessel_data.get('disc', {}).get('name', 'Vessel')} Water Status"
+        self._attr_name = f"{vessel_data.disc.name} Water Status"
 
     @property
     def native_value(self) -> str:
-        color = self._vessel.get("disc", {}).get("waterStatusColor", "gray")
+        vessel = self._vessel
+        color = vessel.disc.water_status_color if vessel else "gray"
         return WATER_STATUS_MAP.get(color, "Unknown")
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
-        disc = self._vessel.get("disc", {})
+        vessel = self._vessel
+        if not vessel:
+            return {}
         return {
-            **disc,
-            "actions": self._vessel.get("actions", []),
+            "name": vessel.disc.name,
+            "text": vessel.disc.text,
+            "last_updated_text": vessel.disc.last_updated_text,
+            "temp_c": vessel.disc.temp_c,
+            "water_status_color": vessel.disc.water_status_color,
+            "actions": [a.to_dict() for a in vessel.actions],
         }
 
 
@@ -101,19 +109,20 @@ class ActionsPendingSensor(CrystalSensorBase):
     _attr_icon = "mdi:clipboard-list"
     _attr_native_unit_of_measurement = None
 
-    def __init__(self, coordinator, vessel_id, vessel_data):
+    def __init__(self, coordinator, vessel_id, vessel_data: ConnectApiAccountVesselV1):
         super().__init__(coordinator, vessel_id, vessel_data)
         self._attr_unique_id = f"{vessel_id}_actions_pending"
-        name = vessel_data.get("disc", {}).get("name", "Vessel")
-        self._attr_name = f"{name} Actions Pending"
+        self._attr_name = f"{vessel_data.disc.name} Actions Pending"
 
     @property
     def native_value(self) -> int:
-        return len(self._vessel.get("actions", []))
+        vessel = self._vessel
+        return len(vessel.actions) if vessel else 0
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
-        return {"actions": self._vessel.get("actions", [])}
+        vessel = self._vessel
+        return {"actions": [a.to_dict() for a in vessel.actions] if vessel else []}
 
 
 class ReadingSensor(CrystalSensorBase):
@@ -121,7 +130,7 @@ class ReadingSensor(CrystalSensorBase):
         self,
         coordinator: CrystalDataUpdateCoordinator,
         vessel_id: int,
-        vessel_data: dict,
+        vessel_data: ConnectApiAccountVesselV1,
         reading_type: str,
         friendly_name: str,
         unit: str | None,
@@ -131,8 +140,7 @@ class ReadingSensor(CrystalSensorBase):
         super().__init__(coordinator, vessel_id, vessel_data)
         self._reading_type = reading_type
         self._attr_unique_id = f"{vessel_id}_{reading_type}"
-        vessel_name = vessel_data.get("disc", {}).get("name", "Vessel")
-        self._attr_name = f"{vessel_name} {friendly_name}"
+        self._attr_name = f"{vessel_data.disc.name} {friendly_name}"
         self._attr_native_unit_of_measurement = unit
         if device_class:
             try:
@@ -143,40 +151,46 @@ class ReadingSensor(CrystalSensorBase):
             self._attr_entity_category = EntityCategory(entity_category)
 
     @property
-    def _reading(self) -> dict:
-        return self._vessel.get("readings", {}).get(self._reading_type, {})
+    def _reading(self) -> ConnectAPIReadingV1 | None:
+        vessel = self._vessel
+        if not vessel:
+            return None
+        # pydantic converts camelCase aliases to snake_case attribute names
+        attr = re.sub(r'(?<!^)(?=[A-Z])', '_', self._reading_type).lower()
+        return getattr(vessel.readings, attr, None)
 
     @property
     def native_value(self) -> float | None:
         r = self._reading
-        if "value" in r:
-            return round(r["value"], 2)
-        rng = r.get("range")
-        if rng and "low" in rng and "high" in rng:
-            return round((rng["low"] + rng["high"]) / 2, 2)
+        if r is None:
+            return None
+        if r.value is not None:
+            return round(r.value, 2)
+        if r.range is not None and r.range.var_from is not None and r.range.to is not None:
+            return round((r.range.var_from + r.range.to) / 2, 2)
         return None
 
     @property
     def available(self) -> bool:
-        return bool(self._reading)
+        return self._reading is not None
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         r = self._reading
-        if not r:
+        if r is None:
             return {}
         attrs: dict[str, Any] = {
-            "status": r.get("status"),
-            "source": r.get("source"),
-            "date": r.get("date"),
-            "status_since": r.get("statusSinceDate"),
+            "status": r.status.value if r.status else None,
+            "source": r.source.value if r.source else None,
+            "date": r.var_date.isoformat() if r.var_date else None,
+            "status_since": r.status_since_date.isoformat() if r.status_since_date else None,
         }
-        if rng := r.get("range"):
-            attrs["range_low"] = rng.get("low")
-            attrs["range_high"] = rng.get("high")
-        if "value" not in r and "range" in r:
+        if r.range is not None:
+            attrs["range_low"] = r.range.var_from
+            attrs["range_high"] = r.range.to
+        if r.value is None and r.range is not None:
             attrs["is_ranged"] = True
-        vessel_actions = self._vessel.get("actions", [])
-        if vessel_actions:
-            attrs["actions"] = vessel_actions
+        vessel = self._vessel
+        if vessel and vessel.actions:
+            attrs["actions"] = [a.to_dict() for a in vessel.actions]
         return attrs

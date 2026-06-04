@@ -6,6 +6,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
+from .api import ConnectApiAccountVesselV1
 from .const import DOMAIN
 from .coordinator import CrystalDataUpdateCoordinator
 
@@ -28,11 +29,11 @@ class ForcePollButton(ButtonEntity):
         self,
         coordinator: CrystalDataUpdateCoordinator,
         vessel_id: int,
-        vessel_data: dict,
+        vessel_data: ConnectApiAccountVesselV1,
     ) -> None:
         self._coordinator = coordinator
         self._vessel_id = vessel_id
-        vessel_name = vessel_data.get("disc", {}).get("name", f"Vessel {vessel_id}")
+        vessel_name = vessel_data.disc.name
         self._attr_unique_id = f"{DOMAIN}_{vessel_id}_force_poll"
         self._attr_name = f"{vessel_name} Force Poll"
         self._attr_icon = "mdi:refresh"

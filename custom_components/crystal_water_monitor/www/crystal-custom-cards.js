@@ -7,6 +7,7 @@ function _wordmarkUrl() {
 // --- Editor ---
 
 class CrystalDiscCardEditor extends HTMLElement {
+
   set hass(hass) {
     this._hass = hass;
     const selector = this.shadowRoot?.querySelector("ha-selector");
@@ -61,9 +62,9 @@ class CrystalDiscCardEditor extends HTMLElement {
 
 customElements.define("crystal-disc-card-editor", CrystalDiscCardEditor);
 
-// --- Card ---
 
 class CrystalDiscCard extends HTMLElement {
+
   static getConfigElement() {
     return document.createElement("crystal-disc-card-editor");
   }

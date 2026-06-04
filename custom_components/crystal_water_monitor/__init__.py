@@ -7,8 +7,6 @@ from pathlib import Path
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
-
 from .api import CrystalApiClient
 from .const import (
     CONF_API_KEY,
@@ -88,11 +86,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         await _async_register_lovelace_resource(hass)
         hass.data[f"{DOMAIN}_static_registered"] = True
     config = _get_config(entry)
-    session = async_get_clientsession(hass)
-    client = CrystalApiClient(
-        api_key=config[CONF_API_KEY],
-        environment=config.get(CONF_ENVIRONMENT, "production"),
-        session=session,
+    client = await hass.async_add_executor_job(
+        lambda: CrystalApiClient(
+            api_key=config[CONF_API_KEY],
+            environment=config.get(CONF_ENVIRONMENT, "production"),
+        )
     )
     coordinator = CrystalDataUpdateCoordinator(
         hass=hass,
@@ -116,5 +114,6 @@ async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> Non
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
-        hass.data[DOMAIN].pop(entry.entry_id)
+        coordinator: CrystalDataUpdateCoordinator = hass.data[DOMAIN].pop(entry.entry_id)
+        await coordinator.client.close()
     return unload_ok
