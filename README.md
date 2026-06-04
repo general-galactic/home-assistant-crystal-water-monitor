@@ -78,7 +78,16 @@ pip install -r requirements_test.txt
 pytest
 ```
 
-### 3. Load into a live Home Assistant for manual testing
+### 3. Lint
+
+ruff must be installed from PyPI directly (not a private index):
+
+```bash
+pip install ruff --index-url https://pypi.org/simple/
+ruff check custom_components/
+```
+
+### 4. Load into a live Home Assistant for manual testing
 
 The easiest way to test against a real HA instance is with the **HA dev container** or a local install.
 
@@ -112,7 +121,7 @@ docker cp custom_components/crystal_water_monitor \
 
 Then restart the container.
 
-### 4. Validate the manifest
+### 5. Validate the manifest
 
 If you have a local Home Assistant core checkout, run:
 
