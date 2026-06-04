@@ -37,5 +37,13 @@
       "cannot_connect": "Impossible de se connecter à l'API Crystal. Vérifiez votre connexion internet.",
       "unknown": "Une erreur inattendue s'est produite."
     }
+  },
+  "exceptions": {
+    "auth_error": {
+      "message": "Échec de l'authentification. Allez dans Paramètres → Appareils et services → Crystal Water Monitor et saisissez à nouveau votre clé API."
+    },
+    "subscription_error": {
+      "message": "Votre abonnement Crystal Water Monitor n'est plus actif. Rendez-vous sur crystalwatermonitor.com pour le renouveler, puis rechargez l'intégration."
+    }
   }
 }

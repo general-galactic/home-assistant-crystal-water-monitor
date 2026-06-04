@@ -1,16 +1,22 @@
 from __future__ import annotations
 
 import json
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "connect-api"))
 
 from connect_api.api.default_api import DefaultApi
 from connect_api.api_client import ApiClient
 from connect_api.configuration import Configuration
-from connect_api.exceptions import ApiException, ForbiddenException, NotFoundException, ServiceException, UnauthorizedException
-from connect_api.models.connect_api_account_vessel_summary_v1 import ConnectApiAccountVesselSummaryV1
+from connect_api.exceptions import (
+    ApiException,
+    ForbiddenException,
+    UnauthorizedException,
+)
+from connect_api.models.connect_api_account_vessel_summary_v1 import (
+    ConnectApiAccountVesselSummaryV1,
+)
 from connect_api.models.connect_api_account_vessel_v1 import ConnectApiAccountVesselV1
 from connect_api.models.connect_api_reading_v1 import ConnectAPIReadingV1
 
@@ -57,7 +63,7 @@ class CrystalSubscriptionError(CrystalApiError):
 
 class CrystalApiClient:
     def __init__(self, api_key: str, environment: str, locale: str = "en") -> None:
-        config = Configuration(host=BASE_URLS[environment], api_key={"api_key": api_key})
+        config = Configuration(host=BASE_URLS[environment], api_key={"ApiKeyAuth": api_key})
         self._client = ApiClient(configuration=config)
         self._client.default_headers["Accept-Language"] = locale
         self._api = DefaultApi(api_client=self._client)
@@ -85,7 +91,7 @@ class CrystalApiClient:
     def _server_message(self, err: ApiException) -> str:
         try:
             return json.loads(err.body).get("message") or err.reason or str(err.status)
-        except Exception:
+        except Exception:  # noqa: BLE001
             return err.reason or str(err.status)
 
     def _map(self, err: ApiException) -> CrystalApiError:

@@ -2,7 +2,13 @@ from __future__ import annotations
 
 import voluptuous as vol
 from homeassistant import config_entries
-from .api import CrystalApiClient, CrystalApiError, CrystalAuthError, CrystalNotFoundError
+
+from .api import (
+    CrystalApiClient,
+    CrystalApiError,
+    CrystalAuthError,
+    CrystalNotFoundError,
+)
 from .const import (
     CONF_API_KEY,
     CONF_ENVIRONMENT,
@@ -82,16 +88,13 @@ class CrystalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     def async_get_options_flow(config_entry):
-        return CrystalOptionsFlow(config_entry)
+        return CrystalOptionsFlow()
 
 
 class CrystalOptionsFlow(config_entries.OptionsFlow):
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-        self._entry = config_entry
-
     async def async_step_init(self, user_input=None):
         errors: dict[str, str] = {}
-        current = {**self._entry.data, **self._entry.options}
+        current = {**self.config_entry.data, **self.config_entry.options}
 
         if user_input is not None:
             environment = user_input.get(CONF_ENVIRONMENT, current.get(CONF_ENVIRONMENT, "production"))
@@ -101,6 +104,7 @@ class CrystalOptionsFlow(config_entries.OptionsFlow):
             else:
                 options = dict(user_input)
                 options.setdefault(CONF_ENVIRONMENT, current.get(CONF_ENVIRONMENT, "production"))
+
                 return self.async_create_entry(title="", data=options)
 
         return self.async_show_form(

@@ -1,6 +1,5 @@
-homeassistant
+pytest-homeassistant-custom-component>=0.13.40
 pytest
 pytest-asyncio
-pytest-homeassistant-custom-component
 aiohttp
 aioresponses

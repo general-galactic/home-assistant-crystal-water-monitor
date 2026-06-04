@@ -34,9 +34,7 @@ class ConnectApiAccountVesselDiscV1(BaseModel):
     temp_c: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, alias="tempC")
     water_status_color: WaterStatusColor = Field(alias="waterStatusColor")
     last_updated_date: Optional[datetime] = Field(default=None, alias="lastUpdatedDate")
-    monitor_serial_number: Optional[StrictStr] = Field(default=None, alias="monitorSerialNumber")
-    sensor_serial_number: Optional[StrictStr] = Field(default=None, alias="sensorSerialNumber")
-    __properties: ClassVar[List[str]] = ["name", "text", "tempC", "waterStatusColor", "lastUpdatedDate", "monitorSerialNumber", "sensorSerialNumber"]
+    __properties: ClassVar[List[str]] = ["name", "text", "tempC", "waterStatusColor", "lastUpdatedDate"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -93,9 +91,7 @@ class ConnectApiAccountVesselDiscV1(BaseModel):
             "text": obj.get("text"),
             "tempC": obj.get("tempC"),
             "waterStatusColor": obj.get("waterStatusColor"),
-            "lastUpdatedDate": obj.get("lastUpdatedDate"),
-            "monitorSerialNumber": obj.get("monitorSerialNumber"),
-            "sensorSerialNumber": obj.get("sensorSerialNumber")
+            "lastUpdatedDate": obj.get("lastUpdatedDate")
         })
         return _obj
 

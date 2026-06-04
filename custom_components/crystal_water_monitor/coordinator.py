@@ -11,6 +11,7 @@ from .api import (
     ConnectApiAccountVesselV1,
     CrystalApiClient,
     CrystalApiError,
+    CrystalAuthError,
     CrystalMaintenanceError,
     CrystalNotFoundError,
     CrystalRateLimitError,
@@ -42,8 +43,16 @@ class CrystalDataUpdateCoordinator(DataUpdateCoordinator):
     async def _async_update_data(self) -> dict[int, ConnectApiAccountVesselV1]:
         try:
             vessels = await self.client.list_vessels()
+        except CrystalAuthError as err:
+            raise ConfigEntryError(
+                translation_domain="crystal_water_monitor",
+                translation_key="auth_error",
+            ) from err
         except CrystalSubscriptionError as err:
-            raise ConfigEntryError("Crystal Water Monitor subscription is no longer active. Visit crystalwatermonitor.com to renew.") from err
+            raise ConfigEntryError(
+                translation_domain="crystal_water_monitor",
+                translation_key="subscription_error",
+            ) from err
         except CrystalRateLimitError:
             _LOGGER.warning("Crystal API rate limit hit; using cached data")
             return self.vessel_data

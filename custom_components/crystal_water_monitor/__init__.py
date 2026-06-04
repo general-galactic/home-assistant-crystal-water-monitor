@@ -7,6 +7,7 @@ from pathlib import Path
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+
 from .api import CrystalApiClient
 from .const import (
     CONF_API_KEY,
@@ -25,7 +26,7 @@ _WWW_DIR = Path(__file__).parent / "www"
 
 try:
     _VERSION = json.loads((Path(__file__).parent / "manifest.json").read_text())["version"]
-except Exception:
+except Exception:  # noqa: BLE001
     _VERSION = "0"
 
 _LOVELACE_URL = f"/crystal_water_monitor/crystal-custom-cards.js?v={_VERSION}"
@@ -33,8 +34,12 @@ _LOVELACE_URL = f"/crystal_water_monitor/crystal-custom-cards.js?v={_VERSION}"
 
 async def _async_register_lovelace_resource(hass: HomeAssistant) -> None:
     try:
-        from homeassistant.components.lovelace.const import LOVELACE_DATA  # noqa: PLC0415
-        from homeassistant.components.lovelace.resources import ResourceStorageCollection  # noqa: PLC0415
+        from homeassistant.components.lovelace.const import (
+            LOVELACE_DATA,  # noqa: PLC0415
+        )
+        from homeassistant.components.lovelace.resources import (
+            ResourceStorageCollection,  # noqa: PLC0415
+        )
 
         lovelace_data = hass.data.get(LOVELACE_DATA)
         if lovelace_data is None:

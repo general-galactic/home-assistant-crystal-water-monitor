@@ -111,7 +111,7 @@ HTTPSignatureAuthSetting = TypedDict(
 AuthSettings = TypedDict(
     "AuthSettings",
     {
-        "api_key": APIKeyAuthSetting,
+        "ApiKeyAuth": APIKeyAuthSetting,
     },
     total=False,
 )
@@ -533,13 +533,13 @@ conf = connect_api.Configuration(
         :return: The Auth Settings information dict.
         """
         auth: AuthSettings = {}
-        if 'api_key' in self.api_key:
-            auth['api_key'] = {
+        if 'ApiKeyAuth' in self.api_key:
+            auth['ApiKeyAuth'] = {
                 'type': 'api_key',
                 'in': 'header',
                 'key': 'x-api-key',
                 'value': self.get_api_key_with_prefix(
-                    'api_key',
+                    'ApiKeyAuth',
                 ),
             }
         return auth

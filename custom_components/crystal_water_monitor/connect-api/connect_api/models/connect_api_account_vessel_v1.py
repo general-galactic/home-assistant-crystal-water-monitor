@@ -18,7 +18,7 @@ import re  # noqa: F401
 import json
 
 from pydantic import BaseModel, ConfigDict, Field, StrictFloat, StrictInt, StrictStr
-from typing import Any, ClassVar, Dict, List, Union
+from typing import Any, ClassVar, Dict, List, Optional, Union
 from connect_api.models.connect_api_account_vessel_disc_v1 import ConnectApiAccountVesselDiscV1
 from connect_api.models.connect_api_action_v1 import ConnectAPIActionV1
 from connect_api.models.connect_api_readings_v1 import ConnectAPIReadingsV1
@@ -33,10 +33,12 @@ class ConnectApiAccountVesselV1(BaseModel):
     vessel_id: StrictInt = Field(alias="vesselId")
     type: StrictStr
     volume_gallons: Union[StrictFloat, StrictInt] = Field(alias="volumeGallons")
+    monitor_serial_number: Optional[StrictStr] = Field(default=None, alias="monitorSerialNumber")
+    sensor_serial_number: Optional[StrictStr] = Field(default=None, alias="sensorSerialNumber")
     disc: ConnectApiAccountVesselDiscV1
     readings: ConnectAPIReadingsV1
     actions: List[ConnectAPIActionV1]
-    __properties: ClassVar[List[str]] = ["vesselId", "type", "volumeGallons", "disc", "readings", "actions"]
+    __properties: ClassVar[List[str]] = ["vesselId", "type", "volumeGallons", "monitorSerialNumber", "sensorSerialNumber", "disc", "readings", "actions"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -105,6 +107,8 @@ class ConnectApiAccountVesselV1(BaseModel):
             "vesselId": obj.get("vesselId"),
             "type": obj.get("type"),
             "volumeGallons": obj.get("volumeGallons"),
+            "monitorSerialNumber": obj.get("monitorSerialNumber"),
+            "sensorSerialNumber": obj.get("sensorSerialNumber"),
             "disc": ConnectApiAccountVesselDiscV1.from_dict(obj["disc"]) if obj.get("disc") is not None else None,
             "readings": ConnectAPIReadingsV1.from_dict(obj["readings"]) if obj.get("readings") is not None else None,
             "actions": [ConnectAPIActionV1.from_dict(_item) for _item in obj["actions"]] if obj.get("actions") is not None else None
