@@ -1,16 +1,20 @@
 {
   "domain": "crystal_water_monitor",
   "name": "Crystal Water Monitor",
-  "after_dependencies": ["lovelace"],
+  "after_dependencies": [
+    "lovelace"
+  ],
   "codeowners": [
     "@general-galactic"
   ],
   "config_flow": true,
-  "dependencies": ["http"],
+  "dependencies": [
+    "http"
+  ],
   "documentation": "https://www.crystalwatermonitor.com",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/generalgalactic/home-assistant-plugin/issues",
   "requirements": [],
   "single_config_entry": true,
-  "version": "1.0.5"
+  "version": "1.0.6"
 }
