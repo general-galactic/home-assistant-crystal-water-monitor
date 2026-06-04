@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryError
@@ -37,6 +37,7 @@ class CrystalDataUpdateCoordinator(DataUpdateCoordinator):
         )
         self.client = client
         self.vessel_data: dict[int, ConnectApiAccountVesselV1] = {}
+        self.last_synced: datetime | None = None
 
     async def _async_update_data(self) -> dict[int, ConnectApiAccountVesselV1]:
         try:
@@ -74,4 +75,5 @@ class CrystalDataUpdateCoordinator(DataUpdateCoordinator):
                 _LOGGER.error("Error fetching vessel %s: %s", vessel_id, err)
 
         self.vessel_data = results
+        self.last_synced = datetime.now(timezone.utc)
         return results
