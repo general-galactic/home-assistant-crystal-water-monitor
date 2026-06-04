@@ -25,6 +25,10 @@ class CrystalNotFoundError(CrystalApiError):
     pass
 
 
+class CrystalSubscriptionError(CrystalApiError):
+    pass
+
+
 class CrystalApiClient:
     def __init__(self, api_key: str, environment: str, session: aiohttp.ClientSession) -> None:
         self._api_key = api_key
@@ -39,13 +43,26 @@ class CrystalApiClient:
         async with self._session.get(url, headers=self._headers()) as resp:
             if resp.status == 401 or resp.status == 403:
                 raise CrystalAuthError("Invalid API key")
+            if resp.status == 402:
+                raise CrystalSubscriptionError("Subscription required")
             if resp.status == 429:
                 raise CrystalRateLimitError("Rate limit exceeded")
             if resp.status == 404:
-                raise CrystalNotFoundError("Resource not found")
+                try:
+                    body = await resp.json()
+                    msg = body.get("message") or body.get("error") or "Not found"
+                except Exception:
+                    msg = "Not found"
+                raise CrystalNotFoundError(msg)
             if resp.status == 503:
                 raise CrystalMaintenanceError("API is in maintenance mode")
-            resp.raise_for_status()
+            if resp.status >= 400:
+                try:
+                    body = await resp.json()
+                    msg = body.get("error") or body.get("message") or resp.reason
+                except Exception:
+                    msg = resp.reason
+                raise CrystalApiError(msg)
             return await resp.json()
 
     async def list_vessels(self) -> list[dict]:

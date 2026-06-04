@@ -1,12 +1,10 @@
 from __future__ import annotations
 
+import json
 import logging
 from pathlib import Path
 
-_LOGGER = logging.getLogger(__name__)
-
 from homeassistant.components.http import StaticPathConfig
-
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -15,17 +13,24 @@ from .api import CrystalApiClient
 from .const import (
     CONF_API_KEY,
     CONF_ENVIRONMENT,
-    CONF_SCAN_INTERVAL,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
     IS_DEV_BUILD,
 )
 from .coordinator import CrystalDataUpdateCoordinator
 
+_LOGGER = logging.getLogger(__name__)
+
 PLATFORMS = ["sensor", "button"] if IS_DEV_BUILD else ["sensor"]
 
 _WWW_DIR = Path(__file__).parent / "www"
-_LOVELACE_RESOURCE = "/crystal_water_monitor/crystal-disc-card.js"
+
+try:
+    _VERSION = json.loads((Path(__file__).parent / "manifest.json").read_text())["version"]
+except Exception:
+    _VERSION = "0"
+
+_LOVELACE_URL = f"/crystal_water_monitor/crystal-custom-cards.js?v={_VERSION}"
 
 
 async def _async_register_lovelace_resource(hass: HomeAssistant) -> None:
@@ -43,12 +48,17 @@ async def _async_register_lovelace_resource(hass: HomeAssistant) -> None:
             _LOGGER.debug("Lovelace in YAML mode, skipping resource registration")
             return
 
-        existing_urls = {r["url"] for r in resource_collection.async_items()}
-        if _LOVELACE_RESOURCE not in existing_urls:
-            await resource_collection.async_create_item(
-                {"res_type": "module", "url": _LOVELACE_RESOURCE}
-            )
-            _LOGGER.info("Registered Lovelace resource: %s", _LOVELACE_RESOURCE)
+        url = _LOVELACE_URL
+
+        # Remove all existing crystal_water_monitor card resource entries
+        for item in list(resource_collection.async_items()):
+            if "crystal_water_monitor/crystal" in item["url"]:
+                await resource_collection.async_delete_item(item["id"])
+
+        await resource_collection.async_create_item(
+            {"res_type": "module", "url": url}
+        )
+        _LOGGER.info("Registered Lovelace resource: %s", url)
     except Exception as err:  # noqa: BLE001
         _LOGGER.warning("Could not register Lovelace resource: %s", err)
 
@@ -59,11 +69,11 @@ def _get_config(entry: ConfigEntry) -> dict:
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    if not hass.data.get(f"{DOMAIN}_www_registered"):
+    if not hass.data.get(f"{DOMAIN}_static_registered"):
         await hass.http.async_register_static_paths([
             StaticPathConfig(
-                _LOVELACE_RESOURCE,
-                str(_WWW_DIR / "crystal-disc-card.js"),
+                "/crystal_water_monitor/crystal-custom-cards.js",
+                str(_WWW_DIR / "crystal-custom-cards.js"),
                 cache_headers=False,
             ),
             *[
@@ -76,7 +86,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             ],
         ])
         await _async_register_lovelace_resource(hass)
-        hass.data[f"{DOMAIN}_www_registered"] = True
+        hass.data[f"{DOMAIN}_static_registered"] = True
     config = _get_config(entry)
     session = async_get_clientsession(hass)
     client = CrystalApiClient(
@@ -87,7 +97,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     coordinator = CrystalDataUpdateCoordinator(
         hass=hass,
         client=client,
-        scan_interval=config.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL),
+        scan_interval=DEFAULT_SCAN_INTERVAL,
     )
     await coordinator.async_config_entry_first_refresh()
 

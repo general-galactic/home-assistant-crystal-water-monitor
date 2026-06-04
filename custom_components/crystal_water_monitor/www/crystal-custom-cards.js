@@ -1,4 +1,4 @@
-const CARD_VERSION = "1.0.0";
+const CARD_VERSION = "1.0.1";
 
 function _wordmarkUrl() {
   return "/crystal_water_monitor/CWM_icon_wordmark_color.svg";
@@ -27,9 +27,9 @@ class CrystalDiscCardEditor extends HTMLElement {
         .checkbox-row label { cursor: pointer; }
       </style>
       <div class="row">
-        <ha-selector label="Vessel"></ha-selector>
+        <ha-selector label="Pool or Hot Tub"></ha-selector>
       </div>
-      <div class="checkbox-row">
+      <div class="checkbox-row" style="margin-top:8px;">
         <input type="checkbox" id="transparent" ${this._config?.transparent ? "checked" : ""} />
         <label for="transparent">Transparent background</label>
       </div>
@@ -39,7 +39,7 @@ class CrystalDiscCardEditor extends HTMLElement {
     if (this._hass) selector.hass = this._hass;
     selector.selector = { device: { integration: "crystal_water_monitor" } };
     selector.value = this._config?.device_id || "";
-    selector.label = "Vessel";
+    selector.label = "Pool or Hot Tub";
 
     selector.addEventListener("value-changed", (e) => {
       this.dispatchEvent(new CustomEvent("config-changed", {
@@ -187,10 +187,14 @@ class CrystalActionsCardEditor extends HTMLElement {
         .checkbox-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; font-size: 14px; }
         .checkbox-row label { cursor: pointer; }
       </style>
-      <div style="padding:8px 0"><ha-selector label="Vessel"></ha-selector></div>
+      <div style="padding:8px 0"><ha-selector label="Pool or Hot Tub"></ha-selector></div>
       <div class="checkbox-row">
         <input type="checkbox" id="show_details" ${this._config?.show_details !== false ? "checked" : ""} />
         <label for="show_details">Show description</label>
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="show_icons" ${this._config?.show_icons !== false ? "checked" : ""} />
+        <label for="show_icons">Show icons</label>
       </div>
       <div class="checkbox-row">
         <input type="checkbox" id="show_logo" ${this._config?.show_logo !== false ? "checked" : ""} />
@@ -201,7 +205,7 @@ class CrystalActionsCardEditor extends HTMLElement {
     if (this._hass) selector.hass = this._hass;
     selector.selector = { device: { integration: "crystal_water_monitor" } };
     selector.value = this._config?.device_id || "";
-    selector.label = "Vessel";
+    selector.label = "Pool or Hot Tub";
     selector.addEventListener("value-changed", (e) => {
       this.dispatchEvent(new CustomEvent("config-changed", {
         detail: { config: { ...this._config, device_id: e.detail.value } },
@@ -212,6 +216,13 @@ class CrystalActionsCardEditor extends HTMLElement {
     this.shadowRoot.querySelector("#show_details").addEventListener("change", (e) => {
       this.dispatchEvent(new CustomEvent("config-changed", {
         detail: { config: { ...this._config, show_details: e.target.checked } },
+        bubbles: true,
+        composed: true,
+      }));
+    });
+    this.shadowRoot.querySelector("#show_icons").addEventListener("change", (e) => {
+      this.dispatchEvent(new CustomEvent("config-changed", {
+        detail: { config: { ...this._config, show_icons: e.target.checked } },
         bubbles: true,
         composed: true,
       }));
@@ -279,6 +290,7 @@ class CrystalActionsCard extends HTMLElement {
     const actions = entity.attributes.actions || [];
     const vesselName = entity.attributes.name || "";
     const showDetails = this._config?.show_details !== false;
+    const showIcons = this._config?.show_icons !== false;
     const showLogo = this._config?.show_logo !== false;
 
     const rows = actions.length === 0
@@ -291,7 +303,7 @@ class CrystalActionsCard extends HTMLElement {
             border-bottom: 1px solid var(--divider-color);
             gap: 12px;
           ">
-            ${a.iconUrl ? `<img src="${a.iconUrl}" style="width:36px;height:36px;border-radius:50%;flex-shrink:0;" />` : ""}
+            ${showIcons && a.iconUrl ? `<img src="${a.iconUrl}" style="width:36px;height:36px;border-radius:50%;flex-shrink:0;" />` : ""}
             <div>
               <div style="font-size:14px;font-weight:600;">${a.title || ""}</div>
               ${showDetails && a.details ? `<div style="font-size:12px;color:var(--secondary-text-color);margin-top:2px;">${a.details}</div>` : ""}
@@ -302,7 +314,10 @@ class CrystalActionsCard extends HTMLElement {
     this.shadowRoot.innerHTML = `
       <ha-card>
         <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;">
-          <div style="font-size:13px;font-weight:600;color:var(--secondary-text-color);text-transform:uppercase;letter-spacing:0.05em;">${vesselName} Actions</div>
+          <div>
+            <div style="font-size:16px;font-weight:600;">${vesselName}</div>
+            <div style="font-size:12px;color:var(--secondary-text-color);text-transform:uppercase;letter-spacing:0.05em;margin-top:2px;">Actions</div>
+          </div>
           ${showLogo ? `<img src="${_wordmarkUrl()}" style="height:30px;" />` : ""}
         </div>
         ${rows}
@@ -325,4 +340,4 @@ window.customCards.push({
   description: "Recommended actions for a Crystal Water Monitor vessel",
 });
 
-console.info(`%c CRYSTAL-DISC-CARD %c ${CARD_VERSION} `, "color:white;background:#2d7fc1;font-weight:700", "color:#2d7fc1;background:white;font-weight:700");
+console.info(`%c CRYSTAL-CUSTOM-CARDS %c ${CARD_VERSION} `, "color:white;background:#2d7fc1;font-weight:700", "color:#2d7fc1;background:white;font-weight:700");

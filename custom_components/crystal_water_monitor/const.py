@@ -6,10 +6,8 @@ IS_DEV_BUILD = os.getenv("HA_CRYSTAL_DEV") == "1"
 
 CONF_API_KEY = "api_key"
 CONF_ENVIRONMENT = "environment"
-CONF_SCAN_INTERVAL = "scan_interval"
 
 DEFAULT_SCAN_INTERVAL = 20
-MIN_SCAN_INTERVAL = 15
 
 BASE_URLS = {
     "production": "https://connect.crystalwatermonitor.app",

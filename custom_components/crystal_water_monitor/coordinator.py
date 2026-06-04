@@ -4,13 +4,16 @@ import logging
 from datetime import timedelta
 
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryError
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import (
     CrystalApiClient,
     CrystalApiError,
     CrystalMaintenanceError,
+    CrystalNotFoundError,
     CrystalRateLimitError,
+    CrystalSubscriptionError,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -38,6 +41,8 @@ class CrystalDataUpdateCoordinator(DataUpdateCoordinator):
     async def _async_update_data(self) -> dict[int, dict]:
         try:
             vessels = await self.client.list_vessels()
+        except CrystalSubscriptionError as err:
+            raise ConfigEntryError("Crystal Water Monitor subscription is no longer active. Visit crystalwatermonitor.com to renew.") from err
         except CrystalRateLimitError:
             _LOGGER.warning("Crystal API rate limit hit; using cached data")
             return self.vessel_data
@@ -53,6 +58,8 @@ class CrystalDataUpdateCoordinator(DataUpdateCoordinator):
             try:
                 detail = await self.client.get_vessel(vessel_id)
                 results[vessel_id] = detail
+            except CrystalNotFoundError as err:
+                raise ConfigEntryError(str(err)) from err
             except CrystalRateLimitError:
                 _LOGGER.warning(
                     "Rate limit hit fetching vessel %s; keeping cached value", vessel_id
