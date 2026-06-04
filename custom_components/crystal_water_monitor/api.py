@@ -21,6 +21,10 @@ class CrystalMaintenanceError(CrystalApiError):
     pass
 
 
+class CrystalNotFoundError(CrystalApiError):
+    pass
+
+
 class CrystalApiClient:
     def __init__(self, api_key: str, environment: str, session: aiohttp.ClientSession) -> None:
         self._api_key = api_key
@@ -37,6 +41,8 @@ class CrystalApiClient:
                 raise CrystalAuthError("Invalid API key")
             if resp.status == 429:
                 raise CrystalRateLimitError("Rate limit exceeded")
+            if resp.status == 404:
+                raise CrystalNotFoundError("Resource not found")
             if resp.status == 503:
                 raise CrystalMaintenanceError("API is in maintenance mode")
             resp.raise_for_status()

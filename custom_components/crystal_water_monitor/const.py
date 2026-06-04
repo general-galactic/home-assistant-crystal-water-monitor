@@ -1,15 +1,8 @@
-import json
 import os
 
 DOMAIN = "crystal_water_monitor"
 
-def _is_dev_build() -> bool:
-    manifest_path = os.path.join(os.path.dirname(__file__), "manifest.json")
-    with open(manifest_path) as f:
-        version = json.load(f).get("version", "")
-    return ".dev" in version
-
-IS_DEV_BUILD = _is_dev_build()
+IS_DEV_BUILD = os.getenv("HA_CRYSTAL_DEV") == "1"
 
 CONF_API_KEY = "api_key"
 CONF_ENVIRONMENT = "environment"
@@ -45,6 +38,6 @@ READING_SENSORS: list[tuple[str, str, str | None, str | None]] = [
     ("totalDissolvedSolids", "Total Dissolved Solids", "ppm", None),
     ("phosphates", "Phosphates", "ppb", None),
     ("lsi", "LSI", None, None),
-    ("battery", "Battery", "%", "battery"),
+    ("battery", "Battery", "mV", None),
     ("wifiRssi", "WiFi Signal", "dBm", "signal_strength"),
 ]

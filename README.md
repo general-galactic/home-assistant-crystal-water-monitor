@@ -112,6 +112,28 @@ ln -s "$(pwd)/custom_components/crystal_water_monitor" \
 
 Then restart HA. After any code change, restart again (or use the **Quick Reload** developer tool if only `sensor.py` or `coordinator.py` changed).
 
+**With a local Docker instance (recommended for dev)**
+
+Run the dev script from the repo root to start a local HA container with the integration volume-mounted:
+
+```bash
+./scripts/dev.sh
+```
+
+Then open `http://localhost:8123` in a browser and complete onboarding. The integration will appear under **Settings → Devices & Services → Add Integration**.
+
+After any code change, restart the container:
+
+```bash
+docker restart ha-dev
+```
+
+To tail logs:
+
+```bash
+docker logs ha-dev --tail 50 | grep -i crystal
+```
+
 **With a production HA instance (Docker)**
 
 ```bash

@@ -35,6 +35,17 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
+_VESSEL_TYPE_ICON = {
+    "Pool": "mdi:pool",
+    "Hot Tub": "mdi:hot-tub",
+    "Swim Spa": "mdi:pool",
+}
+
+
+def _vessel_icon(vessel_data: dict) -> str:
+    return _VESSEL_TYPE_ICON.get(vessel_data.get("type", ""), "mdi:pool")
+
+
 def _device_info(vessel_data: dict) -> DeviceInfo:
     vessel_id = vessel_data["vesselId"]
     return DeviceInfo(
@@ -55,6 +66,7 @@ class CrystalSensorBase(CoordinatorEntity[CrystalDataUpdateCoordinator], SensorE
         super().__init__(coordinator)
         self._vessel_id = vessel_id
         self._attr_device_info = _device_info(vessel_data)
+        self._attr_icon = _vessel_icon(vessel_data)
 
     @property
     def _vessel(self) -> dict:
@@ -132,7 +144,13 @@ class ReadingSensor(CrystalSensorBase):
 
     @property
     def native_value(self) -> float | None:
-        return self._reading.get("value")
+        r = self._reading
+        if "value" in r:
+            return r["value"]
+        rng = r.get("range")
+        if rng and "low" in rng and "high" in rng:
+            return (rng["low"] + rng["high"]) / 2
+        return None
 
     @property
     def available(self) -> bool:
@@ -152,6 +170,8 @@ class ReadingSensor(CrystalSensorBase):
         if rng := r.get("range"):
             attrs["range_low"] = rng.get("low")
             attrs["range_high"] = rng.get("high")
+        if "value" not in r and "range" in r:
+            attrs["is_ranged"] = True
         vessel_actions = self._vessel.get("actions", [])
         if vessel_actions:
             attrs["actions"] = vessel_actions

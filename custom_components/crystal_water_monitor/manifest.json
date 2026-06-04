@@ -3,7 +3,7 @@
   "name": "Crystal Water Monitor",
   "version": "1.0.1",
   "config_flow": true,
-  "documentation": "https://www.crystalwatermonitor.app",
+  "documentation": "https://www.crystalwatermonitor.com",
   "issue_tracker": "https://github.com/generalgalactic/home-assistant-plugin/issues",
   "requirements": [],
   "dependencies": [],

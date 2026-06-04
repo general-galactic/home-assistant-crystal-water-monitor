@@ -4,15 +4,12 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .api import CrystalApiClient, CrystalApiError, CrystalAuthError
+from .api import CrystalApiClient, CrystalApiError, CrystalAuthError, CrystalNotFoundError
 from .const import (
     CONF_API_KEY,
     CONF_ENVIRONMENT,
-    CONF_SCAN_INTERVAL,
-    DEFAULT_SCAN_INTERVAL,
     DOMAIN,
     IS_DEV_BUILD,
-    MIN_SCAN_INTERVAL,
 )
 
 API_KEY_HELP_URL = "https://www.crystalwatermonitor.app/api-key"
@@ -26,9 +23,6 @@ def _user_schema(show_env: bool) -> vol.Schema:
         fields[vol.Required(CONF_ENVIRONMENT, default="production")] = vol.In(
             ["production", "development"]
         )
-    fields[vol.Required(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL)] = vol.All(
-        int, vol.Range(min=MIN_SCAN_INTERVAL)
-    )
     return vol.Schema(fields)
 
 
@@ -40,9 +34,6 @@ def _options_schema(current: dict, show_env: bool) -> vol.Schema:
         fields[vol.Required(CONF_ENVIRONMENT, default=current.get(CONF_ENVIRONMENT, "production"))] = vol.In(
             ["production", "development"]
         )
-    fields[vol.Required(CONF_SCAN_INTERVAL, default=current.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL))] = vol.All(
-        int, vol.Range(min=MIN_SCAN_INTERVAL)
-    )
     return vol.Schema(fields)
 
 
@@ -54,6 +45,8 @@ async def _validate_api_key(hass, api_key: str, environment: str) -> str | None:
         await client.list_vessels()
     except CrystalAuthError:
         return "invalid_auth"
+    except CrystalNotFoundError:
+        return "no_subscription"
     except CrystalApiError:
         return "cannot_connect"
     except Exception:  # noqa: BLE001

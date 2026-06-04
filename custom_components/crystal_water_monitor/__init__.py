@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -11,15 +13,28 @@ from .const import (
     CONF_SCAN_INTERVAL,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
+    IS_DEV_BUILD,
 )
 from .coordinator import CrystalDataUpdateCoordinator
 
-PLATFORMS = ["sensor"]
+PLATFORMS = ["sensor", "button"] if IS_DEV_BUILD else ["sensor"]
+
+_WWW_DIR = Path(__file__).parent / "www"
+_LOVELACE_RESOURCE = "/crystal_water_monitor/crystal-disc-card.js"
 
 
 def _get_config(entry: ConfigEntry) -> dict:
     """Merge entry data with options, options taking precedence."""
     return {**entry.data, **entry.options}
+
+
+async def async_setup(hass: HomeAssistant, config: dict) -> bool:
+    hass.http.register_static_path(
+        _LOVELACE_RESOURCE,
+        str(_WWW_DIR / "crystal-disc-card.js"),
+        cache_headers=False,
+    )
+    return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
