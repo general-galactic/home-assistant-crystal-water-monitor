@@ -1,19 +1,18 @@
 from __future__ import annotations
 
 import voluptuous as vol
-
 from homeassistant import config_entries
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .api import CrystalApiClient, CrystalAuthError, CrystalApiError
+from .api import CrystalApiClient, CrystalApiError, CrystalAuthError
 from .const import (
-    DOMAIN,
     CONF_API_KEY,
     CONF_ENVIRONMENT,
     CONF_SCAN_INTERVAL,
     DEFAULT_SCAN_INTERVAL,
-    MIN_SCAN_INTERVAL,
+    DOMAIN,
     IS_DEV_BUILD,
+    MIN_SCAN_INTERVAL,
 )
 
 API_KEY_HELP_URL = "https://www.crystalwatermonitor.app/api-key"

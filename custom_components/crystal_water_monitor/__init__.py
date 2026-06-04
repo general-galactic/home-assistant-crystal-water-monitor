@@ -5,7 +5,13 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import CrystalApiClient
-from .const import DOMAIN, CONF_API_KEY, CONF_ENVIRONMENT, CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
+from .const import (
+    CONF_API_KEY,
+    CONF_ENVIRONMENT,
+    CONF_SCAN_INTERVAL,
+    DEFAULT_SCAN_INTERVAL,
+    DOMAIN,
+)
 from .coordinator import CrystalDataUpdateCoordinator
 
 PLATFORMS = ["sensor"]
