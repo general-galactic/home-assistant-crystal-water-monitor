@@ -1,4 +1,4 @@
-const CARD_VERSION = "1.0.1";
+const CARD_VERSION = "1.0.3";
 
 function _wordmarkUrl() {
   return "/crystal_water_monitor/CWM_icon_wordmark_color.svg";
@@ -60,7 +60,7 @@ class CrystalDiscCardEditor extends HTMLElement {
   }
 }
 
-customElements.define("crystal-disc-card-editor", CrystalDiscCardEditor);
+if (!customElements.get("crystal-disc-card-editor")) customElements.define("crystal-disc-card-editor", CrystalDiscCardEditor);
 
 
 class CrystalDiscCard extends HTMLElement {
@@ -105,7 +105,6 @@ class CrystalDiscCard extends HTMLElement {
 
     const entity = this._findWaterStatusEntity();
     const transparent = this._config?.transparent;
-
     if (!entity) {
       this.shadowRoot.innerHTML = `
         <ha-card>
@@ -121,7 +120,20 @@ class CrystalDiscCard extends HTMLElement {
     const discUrl = this._discUrl(color);
     const name = disc.name || entity.attributes.friendly_name || "";
     const text = disc.text || entity.state || "";
-    const lastUpdated = disc.lastUpdatedText || disc.last_updated_text || "";
+    const lastUpdated = (() => {
+      const iso = disc.lastUpdatedDate;
+      if (!iso) return "";
+      const diffMs = Date.now() - new Date(iso).getTime();
+      const mins = Math.floor(diffMs / 60000);
+      if (mins < 1) return "just now";
+      if (mins < 60) return `${mins} minute${mins === 1 ? "" : "s"} ago`;
+      const hrs = Math.floor(mins / 60);
+      if (hrs < 24) return `${hrs} hour${hrs === 1 ? "" : "s"} ago`;
+      const days = Math.floor(hrs / 24);
+      if (days < 365) return `${days} day${days === 1 ? "" : "s"} ago`;
+      const years = Math.floor(days / 365);
+      return `${years} year${years === 1 ? "" : "s"} ago`;
+    })();
     const tempC = disc.tempC;
     const tempF = tempC != null ? ((tempC * 9) / 5 + 32).toFixed(0) : null;
     const temp = tempF != null ? `${tempF}°F` : "";
@@ -165,7 +177,7 @@ class CrystalDiscCard extends HTMLElement {
   }
 }
 
-customElements.define("crystal-disc-card", CrystalDiscCard);
+if (!customElements.get("crystal-disc-card")) customElements.define("crystal-disc-card", CrystalDiscCard);
 
 // --- Actions Card Editor ---
 
@@ -238,7 +250,7 @@ class CrystalActionsCardEditor extends HTMLElement {
   }
 }
 
-customElements.define("crystal-actions-card-editor", CrystalActionsCardEditor);
+if (!customElements.get("crystal-actions-card-editor")) customElements.define("crystal-actions-card-editor", CrystalActionsCardEditor);
 
 // --- Actions Card ---
 
@@ -327,7 +339,7 @@ class CrystalActionsCard extends HTMLElement {
   }
 }
 
-customElements.define("crystal-actions-card", CrystalActionsCard);
+if (!customElements.get("crystal-actions-card")) customElements.define("crystal-actions-card", CrystalActionsCard);
 
 window.customCards = window.customCards || [];
 window.customCards.push({
