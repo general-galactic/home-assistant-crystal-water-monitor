@@ -2,4 +2,5 @@ pytest-homeassistant-custom-component>=0.13.74
 pytest
 pytest-asyncio
 aiohttp
+aiohttp-retry
 aioresponses
