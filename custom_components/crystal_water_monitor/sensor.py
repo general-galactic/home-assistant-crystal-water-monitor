@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import re
+from datetime import datetime, timezone
 from typing import Any
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
@@ -30,12 +31,24 @@ async def async_setup_entry(
     for vessel_id, vessel_data in coordinator.vessel_data.items():
         entities.append(WaterStatusSensor(coordinator, vessel_id, vessel_data))
         entities.append(ActionsPendingSensor(coordinator, vessel_id, vessel_data))
+        entities.append(LastUpdatedSensor(coordinator, vessel_id, vessel_data))
+        entities.append(LastSyncedSensor(coordinator, vessel_id, vessel_data))
         for reading_type, name, unit, device_class, entity_category in READING_SENSORS:
             entities.append(
                 ReadingSensor(coordinator, vessel_id, vessel_data, reading_type, name, unit, device_class, entity_category)
             )
 
     async_add_entities(entities)
+
+
+def _last_updated(vessel: ConnectApiAccountVesselV1) -> str | None:
+    if vessel.disc.last_updated_date:
+        return vessel.disc.last_updated_date.isoformat()
+    for field in vessel.readings.model_fields:
+        r = getattr(vessel.readings, field, None)
+        if r is not None and r.var_date:
+            return r.var_date.isoformat()
+    return None
 
 
 _VESSEL_TYPE_ICON = {
@@ -87,7 +100,7 @@ class WaterStatusSensor(CrystalSensorBase):
     @property
     def native_value(self) -> str:
         vessel = self._vessel
-        color = vessel.disc.water_status_color if vessel else "gray"
+        color = vessel.disc.water_status_color.value if vessel else "gray"
         return WATER_STATUS_MAP.get(color, "Unknown")
 
     @property
@@ -95,12 +108,15 @@ class WaterStatusSensor(CrystalSensorBase):
         vessel = self._vessel
         if not vessel:
             return {}
+        disc = vessel.disc
         return {
-            "name": vessel.disc.name,
-            "text": vessel.disc.text,
-            "last_updated_text": vessel.disc.last_updated_text,
-            "temp_c": vessel.disc.temp_c,
-            "water_status_color": vessel.disc.water_status_color,
+            "name": disc.name,
+            "text": disc.text,
+            "tempC": disc.temp_c,
+            "lastUpdatedDate": _last_updated(vessel),
+            "monitorSerialNumber": disc.monitor_serial_number,
+            "sensorSerialNumber": disc.sensor_serial_number,
+            "waterStatusColor": disc.water_status_color.value,
             "actions": [a.to_dict() for a in vessel.actions],
         }
 
@@ -123,6 +139,45 @@ class ActionsPendingSensor(CrystalSensorBase):
     def extra_state_attributes(self) -> dict[str, Any]:
         vessel = self._vessel
         return {"actions": [a.to_dict() for a in vessel.actions] if vessel else []}
+
+
+class LastUpdatedSensor(CrystalSensorBase):
+    _attr_icon = "mdi:clock-outline"
+    _attr_device_class = SensorDeviceClass.TIMESTAMP
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator, vessel_id, vessel_data: ConnectApiAccountVesselV1):
+        super().__init__(coordinator, vessel_id, vessel_data)
+        self._attr_unique_id = f"{vessel_id}_last_updated"
+        self._attr_name = f"{vessel_data.disc.name} Last Updated"
+
+    @property
+    def native_value(self):
+        vessel = self._vessel
+        if not vessel:
+            return None
+        iso = _last_updated(vessel)
+        if not iso:
+            return None
+        dt = datetime.fromisoformat(iso)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt
+
+
+class LastSyncedSensor(CrystalSensorBase):
+    _attr_icon = "mdi:cloud-check-outline"
+    _attr_device_class = SensorDeviceClass.TIMESTAMP
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator, vessel_id, vessel_data: ConnectApiAccountVesselV1):
+        super().__init__(coordinator, vessel_id, vessel_data)
+        self._attr_unique_id = f"{vessel_id}_last_synced"
+        self._attr_name = f"{vessel_data.disc.name} Last Synced"
+
+    @property
+    def native_value(self) -> datetime | None:
+        return self.coordinator.last_synced
 
 
 class ReadingSensor(CrystalSensorBase):
