@@ -4,7 +4,6 @@ import json
 import logging
 from pathlib import Path
 
-from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
@@ -82,6 +81,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})
     if not hass.data.get(f"{DOMAIN}_static_registered"):
         hass.data[f"{DOMAIN}_static_registered"] = True
+        from homeassistant.components.http import StaticPathConfig  # noqa: PLC0415
         await hass.http.async_register_static_paths([
             StaticPathConfig(
                 "/crystal_water_monitor/crystal-custom-cards.js",
