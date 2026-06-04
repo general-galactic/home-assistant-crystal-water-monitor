@@ -1,7 +1,7 @@
 {
   "domain": "crystal_water_monitor",
   "name": "Crystal Water Monitor",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "config_flow": true,
   "documentation": "https://www.crystalwatermonitor.com",
   "issue_tracker": "https://github.com/generalgalactic/home-assistant-plugin/issues",

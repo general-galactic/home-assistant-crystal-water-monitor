@@ -46,16 +46,21 @@ async def _async_register_lovelace_resource(hass: HomeAssistant) -> None:
             _LOGGER.debug("Lovelace in YAML mode, skipping resource registration")
             return
 
+        await resource_collection.async_load()
+
         url = _LOVELACE_URL
 
-        # Remove all existing crystal_water_monitor card resource entries
-        for item in list(resource_collection.async_items()):
-            if "crystal_water_monitor/crystal" in item["url"]:
-                await resource_collection.async_delete_item(item["id"])
+        all_items = list(resource_collection.async_items())
+        mine = [i for i in all_items if "crystal_water_monitor/crystal" in i["url"]]
+        correct = [i for i in mine if i["url"] == url]
 
-        await resource_collection.async_create_item(
-            {"res_type": "module", "url": url}
-        )
+        if len(correct) == 1 and len(mine) == 1:
+            return
+
+        for item in mine:
+            await resource_collection.async_delete_item(item["id"])
+
+        await resource_collection.async_create_item({"res_type": "module", "url": url})
         _LOGGER.info("Registered Lovelace resource: %s", url)
     except Exception as err:  # noqa: BLE001
         _LOGGER.warning("Could not register Lovelace resource: %s", err)
@@ -67,7 +72,9 @@ def _get_config(entry: ConfigEntry) -> dict:
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    hass.data.setdefault(DOMAIN, {})
     if not hass.data.get(f"{DOMAIN}_static_registered"):
+        hass.data[f"{DOMAIN}_static_registered"] = True
         await hass.http.async_register_static_paths([
             StaticPathConfig(
                 "/crystal_water_monitor/crystal-custom-cards.js",
@@ -84,7 +91,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             ],
         ])
         await _async_register_lovelace_resource(hass)
-        hass.data[f"{DOMAIN}_static_registered"] = True
     config = _get_config(entry)
     client = await hass.async_add_executor_job(
         lambda: CrystalApiClient(
