@@ -1,4 +1,77 @@
-const CARD_VERSION = "1.0.3";
+const CARD_VERSION = "1.0.4";
+
+const TRANSLATIONS = {
+  en: {
+    "editor.pool_label": "Pool or Hot Tub",
+    "editor.transparent": "Transparent background",
+    "editor.show_description": "Show description",
+    "editor.show_icons": "Show icons",
+    "editor.show_logo": "Show logo",
+    "card.no_vessel_selected": "Select a vessel in the card editor.",
+    "card.entity_not_found": "Water Status entity not found for this vessel.",
+    "card.actions_entity_not_found": "Entity not found for this vessel.",
+    "card.no_actions": "No actions needed.",
+    "card.actions_header": "Actions",
+    "card.just_now": "just now",
+    "card.minutes_ago_one": "1 minute ago",
+    "card.minutes_ago_other": "{n} minutes ago",
+    "card.hours_ago_one": "1 hour ago",
+    "card.hours_ago_other": "{n} hours ago",
+    "card.days_ago_one": "1 day ago",
+    "card.days_ago_other": "{n} days ago",
+    "card.years_ago_one": "1 year ago",
+    "card.years_ago_other": "{n} years ago",
+  },
+  es: {
+    "editor.pool_label": "Piscina o bañera de hidromasaje",
+    "editor.transparent": "Fondo transparente",
+    "editor.show_description": "Mostrar descripción",
+    "editor.show_icons": "Mostrar iconos",
+    "editor.show_logo": "Mostrar logotipo",
+    "card.no_vessel_selected": "Seleccione un depósito en el editor de tarjetas.",
+    "card.entity_not_found": "No se encontró la entidad de estado del agua para este depósito.",
+    "card.actions_entity_not_found": "No se encontró la entidad para este depósito.",
+    "card.no_actions": "No se necesitan acciones.",
+    "card.actions_header": "Acciones",
+    "card.just_now": "ahora mismo",
+    "card.minutes_ago_one": "hace 1 minuto",
+    "card.minutes_ago_other": "hace {n} minutos",
+    "card.hours_ago_one": "hace 1 hora",
+    "card.hours_ago_other": "hace {n} horas",
+    "card.days_ago_one": "hace 1 día",
+    "card.days_ago_other": "hace {n} días",
+    "card.years_ago_one": "hace 1 año",
+    "card.years_ago_other": "hace {n} años",
+  },
+  fr: {
+    "editor.pool_label": "Piscine ou spa",
+    "editor.transparent": "Arrière-plan transparent",
+    "editor.show_description": "Afficher la description",
+    "editor.show_icons": "Afficher les icônes",
+    "editor.show_logo": "Afficher le logo",
+    "card.no_vessel_selected": "Sélectionnez un bassin dans l'éditeur de carte.",
+    "card.entity_not_found": "Entité d'état de l'eau introuvable pour ce bassin.",
+    "card.actions_entity_not_found": "Entité introuvable pour ce bassin.",
+    "card.no_actions": "Aucune action requise.",
+    "card.actions_header": "Actions",
+    "card.just_now": "à l'instant",
+    "card.minutes_ago_one": "il y a 1 minute",
+    "card.minutes_ago_other": "il y a {n} minutes",
+    "card.hours_ago_one": "il y a 1 heure",
+    "card.hours_ago_other": "il y a {n} heures",
+    "card.days_ago_one": "il y a 1 jour",
+    "card.days_ago_other": "il y a {n} jours",
+    "card.years_ago_one": "il y a 1 an",
+    "card.years_ago_other": "il y a {n} ans",
+  },
+};
+
+function t(hass, key, vars) {
+  const lang = (hass?.language ?? "en").split("-")[0];
+  const str = (TRANSLATIONS[lang] ?? TRANSLATIONS["en"])[key] ?? key;
+  if (!vars) return str;
+  return Object.entries(vars).reduce((s, [k, v]) => s.replace(`{${k}}`, v), str);
+}
 
 function _wordmarkUrl() {
   return "/crystal_water_monitor/CWM_icon_wordmark_color.svg";
@@ -28,11 +101,11 @@ class CrystalDiscCardEditor extends HTMLElement {
         .checkbox-row label { cursor: pointer; }
       </style>
       <div class="row">
-        <ha-selector label="Pool or Hot Tub"></ha-selector>
+        <ha-selector label="${t(this._hass, "editor.pool_label")}"></ha-selector>
       </div>
       <div class="checkbox-row" style="margin-top:8px;">
         <input type="checkbox" id="transparent" ${this._config?.transparent ? "checked" : ""} />
-        <label for="transparent">Transparent background</label>
+        <label for="transparent">${t(this._hass, "editor.transparent")}</label>
       </div>
     `;
 
@@ -40,7 +113,7 @@ class CrystalDiscCardEditor extends HTMLElement {
     if (this._hass) selector.hass = this._hass;
     selector.selector = { device: { integration: "crystal_water_monitor" } };
     selector.value = this._config?.device_id || "";
-    selector.label = "Pool or Hot Tub";
+    selector.label = t(this._hass, "editor.pool_label");
 
     selector.addEventListener("value-changed", (e) => {
       this.dispatchEvent(new CustomEvent("config-changed", {
@@ -109,7 +182,7 @@ class CrystalDiscCard extends HTMLElement {
       this.shadowRoot.innerHTML = `
         <ha-card>
           <div style="padding:16px;color:var(--secondary-text-color)">
-            ${this._config?.device_id ? "Water Status entity not found for this vessel." : "Select a vessel in the card editor."}
+            ${this._config?.device_id ? t(this._hass, "card.entity_not_found") : t(this._hass, "card.no_vessel_selected")}
           </div>
         </ha-card>`;
       return;
@@ -125,14 +198,14 @@ class CrystalDiscCard extends HTMLElement {
       if (!iso) return "";
       const diffMs = Date.now() - new Date(iso).getTime();
       const mins = Math.floor(diffMs / 60000);
-      if (mins < 1) return "just now";
-      if (mins < 60) return `${mins} minute${mins === 1 ? "" : "s"} ago`;
+      if (mins < 1) return t(this._hass, "card.just_now");
+      if (mins < 60) return mins === 1 ? t(this._hass, "card.minutes_ago_one") : t(this._hass, "card.minutes_ago_other", { n: mins });
       const hrs = Math.floor(mins / 60);
-      if (hrs < 24) return `${hrs} hour${hrs === 1 ? "" : "s"} ago`;
+      if (hrs < 24) return hrs === 1 ? t(this._hass, "card.hours_ago_one") : t(this._hass, "card.hours_ago_other", { n: hrs });
       const days = Math.floor(hrs / 24);
-      if (days < 365) return `${days} day${days === 1 ? "" : "s"} ago`;
+      if (days < 365) return days === 1 ? t(this._hass, "card.days_ago_one") : t(this._hass, "card.days_ago_other", { n: days });
       const years = Math.floor(days / 365);
-      return `${years} year${years === 1 ? "" : "s"} ago`;
+      return years === 1 ? t(this._hass, "card.years_ago_one") : t(this._hass, "card.years_ago_other", { n: years });
     })();
     const tempC = disc.tempC;
     const tempF = tempC != null ? ((tempC * 9) / 5 + 32).toFixed(0) : null;
@@ -200,25 +273,25 @@ class CrystalActionsCardEditor extends HTMLElement {
         .checkbox-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; font-size: 14px; }
         .checkbox-row label { cursor: pointer; }
       </style>
-      <div style="padding:8px 0"><ha-selector label="Pool or Hot Tub"></ha-selector></div>
+      <div style="padding:8px 0"><ha-selector label="${t(this._hass, "editor.pool_label")}"></ha-selector></div>
       <div class="checkbox-row">
         <input type="checkbox" id="show_details" ${this._config?.show_details !== false ? "checked" : ""} />
-        <label for="show_details">Show description</label>
+        <label for="show_details">${t(this._hass, "editor.show_description")}</label>
       </div>
       <div class="checkbox-row">
         <input type="checkbox" id="show_icons" ${this._config?.show_icons !== false ? "checked" : ""} />
-        <label for="show_icons">Show icons</label>
+        <label for="show_icons">${t(this._hass, "editor.show_icons")}</label>
       </div>
       <div class="checkbox-row">
         <input type="checkbox" id="show_logo" ${this._config?.show_logo !== false ? "checked" : ""} />
-        <label for="show_logo">Show logo</label>
+        <label for="show_logo">${t(this._hass, "editor.show_logo")}</label>
       </div>
     `;
     const selector = this.shadowRoot.querySelector("ha-selector");
     if (this._hass) selector.hass = this._hass;
     selector.selector = { device: { integration: "crystal_water_monitor" } };
     selector.value = this._config?.device_id || "";
-    selector.label = "Pool or Hot Tub";
+    selector.label = t(this._hass, "editor.pool_label");
     selector.addEventListener("value-changed", (e) => {
       this.dispatchEvent(new CustomEvent("config-changed", {
         detail: { config: { ...this._config, device_id: e.detail.value } },
@@ -294,7 +367,7 @@ class CrystalActionsCard extends HTMLElement {
       this.shadowRoot.innerHTML = `
         <ha-card>
           <div style="padding:16px;color:var(--secondary-text-color)">
-            ${this._config?.device_id ? "Entity not found for this vessel." : "Select a vessel in the card editor."}
+            ${this._config?.device_id ? t(this._hass, "card.actions_entity_not_found") : t(this._hass, "card.no_vessel_selected")}
           </div>
         </ha-card>`;
       return;
@@ -307,7 +380,7 @@ class CrystalActionsCard extends HTMLElement {
     const showLogo = this._config?.show_logo !== false;
 
     const rows = actions.length === 0
-      ? `<div style="padding:16px;color:var(--secondary-text-color)">No actions needed.</div>`
+      ? `<div style="padding:16px;color:var(--secondary-text-color)">${t(this._hass, "card.no_actions")}</div>`
       : actions.map((a) => `
           <div style="
             display: flex;
@@ -329,7 +402,7 @@ class CrystalActionsCard extends HTMLElement {
         <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;">
           <div>
             <div style="font-size:16px;font-weight:600;">${vesselName}</div>
-            <div style="font-size:12px;color:var(--secondary-text-color);text-transform:uppercase;letter-spacing:0.05em;margin-top:2px;">Actions</div>
+            <div style="font-size:12px;color:var(--secondary-text-color);text-transform:uppercase;letter-spacing:0.05em;margin-top:2px;">${t(this._hass, "card.actions_header")}</div>
           </div>
           ${showLogo ? `<img src="${_wordmarkUrl()}" style="height:30px;" />` : ""}
         </div>

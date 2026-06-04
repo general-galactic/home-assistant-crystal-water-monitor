@@ -1,0 +1,41 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Conectar a Crystal Water Monitor",
+        "description": "Para usar esta integración, necesitará obtener una clave de API de Crystal Connect. [Siga este enlace para aprender cómo obtener una clave de API.]({api_key_url})",
+        "data": {
+          "api_key": "Clave de API",
+          "environment": "Entorno"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Clave de API no válida. Verifique su clave e inténtelo de nuevo.",
+      "no_subscription": "Sin suscripción activa. Debe tener una suscripción activa a Crystal Water Monitor para usar la API Connect.",
+      "cannot_connect": "No se pudo conectar a la API de Crystal. Verifique su conexión a internet.",
+      "unknown": "Ocurrió un error inesperado."
+    },
+    "abort": {
+      "already_configured": "Esta clave de API ya está configurada."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Configuración de Crystal Water Monitor",
+        "description": "Actualice su clave de API o entorno. [Obtener una clave de API]({api_key_url})",
+        "data": {
+          "api_key": "Clave de API",
+          "environment": "Entorno"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Clave de API no válida. Verifique su clave e inténtelo de nuevo.",
+      "no_subscription": "Sin suscripción activa. Debe tener una suscripción activa a Crystal Water Monitor para usar la API Connect.",
+      "cannot_connect": "No se pudo conectar a la API de Crystal. Verifique su conexión a internet.",
+      "unknown": "Ocurrió un error inesperado."
+    }
+  }
+}
