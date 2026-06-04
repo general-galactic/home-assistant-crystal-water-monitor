@@ -6,7 +6,8 @@
   "documentation": "https://www.crystalwatermonitor.com",
   "issue_tracker": "https://github.com/generalgalactic/home-assistant-plugin/issues",
   "requirements": [],
-  "dependencies": [],
+  "dependencies": ["http"],
+  "after_dependencies": ["lovelace"],
   "codeowners": [
     "@general-galactic"
   ],

@@ -1,4 +1,4 @@
-pytest-homeassistant-custom-component>=0.13.40
+pytest-homeassistant-custom-component>=0.13.74
 pytest
 pytest-asyncio
 aiohttp
