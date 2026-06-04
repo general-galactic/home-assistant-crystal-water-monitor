@@ -73,7 +73,7 @@ Use the release script to bump the version, commit, and tag:
 ./scripts/release.sh
 ```
 
-Enter a version like `1.0.2` for production or `1.0.2.dev` for a dev build. Dev builds enable the environment selector in the config flow via the `HA_CRYSTAL_DEV` env var — the version suffix is no longer used for this purpose.
+Enter a semver version like `1.0.2`. Dev builds enable the environment selector in the config flow via the `HA_CRYSTAL_DEV` env var.
 
 ## Validate the manifest
 

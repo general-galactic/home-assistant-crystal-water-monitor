@@ -15,7 +15,7 @@ fi
 
 # Validate format: digits and dots, optional -suffix
 if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+|(\.[a-zA-Z][a-zA-Z0-9]*))?$ ]]; then
-  echo "Invalid version format. Use semver e.g. 1.2.0 or 1.2.0.dev"
+  echo "Invalid version format. Use semver e.g. 1.2.0"
   exit 1
 fi
 
