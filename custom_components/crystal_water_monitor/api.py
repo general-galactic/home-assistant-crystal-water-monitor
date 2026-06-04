@@ -90,7 +90,7 @@ class CrystalApiClient:
 
     def _server_message(self, err: ApiException) -> str:
         try:
-            return json.loads(err.body).get("message") or err.reason or str(err.status)
+            return json.loads(err.body or "{}").get("message") or err.reason or str(err.status)
         except Exception:  # noqa: BLE001
             return err.reason or str(err.status)
 

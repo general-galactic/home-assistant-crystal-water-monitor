@@ -34,13 +34,15 @@ _LOVELACE_URL = f"/crystal_water_monitor/crystal-custom-cards.js?v={_VERSION}"
 
 async def _async_register_lovelace_resource(hass: HomeAssistant) -> None:
     try:
-        from homeassistant.components.lovelace.const import (
-            LOVELACE_DATA,  # noqa: PLC0415
-        )
+        import homeassistant.components.lovelace.const as _lovelace_const  # noqa: PLC0415
         from homeassistant.components.lovelace.resources import (
             ResourceStorageCollection,  # noqa: PLC0415
         )
 
+        LOVELACE_DATA = getattr(_lovelace_const, "LOVELACE_DATA", None)
+        if LOVELACE_DATA is None:
+            _LOGGER.debug("LOVELACE_DATA not available, skipping resource registration")
+            return
         lovelace_data = hass.data.get(LOVELACE_DATA)
         if lovelace_data is None:
             _LOGGER.warning("Lovelace not loaded yet, skipping resource registration")

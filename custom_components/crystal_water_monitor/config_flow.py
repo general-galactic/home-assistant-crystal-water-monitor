@@ -61,7 +61,7 @@ async def _validate_api_key(hass, api_key: str, environment: str) -> str | None:
         await client.close()
 
 
-class CrystalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class CrystalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg]
     VERSION = 1
 
     async def async_step_user(self, user_input=None):

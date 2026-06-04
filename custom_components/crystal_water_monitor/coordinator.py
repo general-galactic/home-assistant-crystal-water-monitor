@@ -21,7 +21,7 @@ from .api import (
 _LOGGER = logging.getLogger(__name__)
 
 
-class CrystalDataUpdateCoordinator(DataUpdateCoordinator):
+class CrystalDataUpdateCoordinator(DataUpdateCoordinator[dict[int, ConnectApiAccountVesselV1]]):
     """Fetches data for all vessels under one account."""
 
     def __init__(
