@@ -1,4 +1,4 @@
-const CARD_VERSION = "1.0.4";
+const CARD_VERSION = "1.0.5";
 
 const TRANSLATIONS = {
   en: {
@@ -159,6 +159,36 @@ class CrystalDiscCard extends HTMLElement {
     return 3;
   }
 
+  connectedCallback() {
+    this._tickInterval = setInterval(() => this._tickLastUpdated(), 60000);
+  }
+
+  disconnectedCallback() {
+    clearInterval(this._tickInterval);
+  }
+
+  _relativeTime(iso) {
+    if (!iso) return "";
+    const diffMs = Date.now() - new Date(iso).getTime();
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 1) return t(this._hass, "card.just_now");
+    if (mins < 60) return mins === 1 ? t(this._hass, "card.minutes_ago_one") : t(this._hass, "card.minutes_ago_other", { n: mins });
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return hrs === 1 ? t(this._hass, "card.hours_ago_one") : t(this._hass, "card.hours_ago_other", { n: hrs });
+    const days = Math.floor(hrs / 24);
+    if (days < 365) return days === 1 ? t(this._hass, "card.days_ago_one") : t(this._hass, "card.days_ago_other", { n: days });
+    const years = Math.floor(days / 365);
+    return years === 1 ? t(this._hass, "card.years_ago_one") : t(this._hass, "card.years_ago_other", { n: years });
+  }
+
+  _tickLastUpdated() {
+    const el = this.shadowRoot?.querySelector("#crystal-last-updated");
+    if (!el) return;
+    const entity = this._findWaterStatusEntity();
+    if (!entity) return;
+    el.textContent = this._relativeTime(entity.attributes.lastUpdatedDate);
+  }
+
   _findWaterStatusEntity() {
     if (!this._hass || !this._config?.device_id) return null;
     const deviceId = this._config.device_id;
@@ -193,20 +223,9 @@ class CrystalDiscCard extends HTMLElement {
     const discUrl = this._discUrl(color);
     const name = disc.name || entity.attributes.friendly_name || "";
     const text = disc.text || entity.state || "";
-    const lastUpdated = (() => {
-      const iso = disc.lastUpdatedDate;
-      if (!iso) return "";
-      const diffMs = Date.now() - new Date(iso).getTime();
-      const mins = Math.floor(diffMs / 60000);
-      if (mins < 1) return t(this._hass, "card.just_now");
-      if (mins < 60) return mins === 1 ? t(this._hass, "card.minutes_ago_one") : t(this._hass, "card.minutes_ago_other", { n: mins });
-      const hrs = Math.floor(mins / 60);
-      if (hrs < 24) return hrs === 1 ? t(this._hass, "card.hours_ago_one") : t(this._hass, "card.hours_ago_other", { n: hrs });
-      const days = Math.floor(hrs / 24);
-      if (days < 365) return days === 1 ? t(this._hass, "card.days_ago_one") : t(this._hass, "card.days_ago_other", { n: days });
-      const years = Math.floor(days / 365);
-      return years === 1 ? t(this._hass, "card.years_ago_one") : t(this._hass, "card.years_ago_other", { n: years });
-    })();
+
+    const lastUpdated = this._relativeTime(disc.lastUpdatedDate);
+    
     const tempC = disc.tempC;
     const tempF = tempC != null ? ((tempC * 9) / 5 + 32).toFixed(0) : null;
     const temp = tempF != null ? `${tempF}°F` : "";
@@ -235,7 +254,7 @@ class CrystalDiscCard extends HTMLElement {
             <div style="font-size: 13px; font-weight: 600; margin-bottom: 6px;">${name}</div>
             <div style="font-size: 44px; font-weight: 700; line-height: 1;">${temp}</div>
             <div style="font-size: 13px; margin-top: 6px;">${text}</div>
-            <div style="font-size: 11px; margin-top: 10px; opacity: 0.85;">${lastUpdated}</div>
+            <div id="crystal-last-updated" style="font-size: 11px; margin-top: 10px; opacity: 0.85;">${lastUpdated}</div>
           </div>
         </div>
 
