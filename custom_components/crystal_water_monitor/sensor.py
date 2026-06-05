@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import re
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, Callable
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.config_entries import ConfigEntry
@@ -53,11 +53,13 @@ async def async_setup_entry(
     for vessel_id, coordinator in coordinators.items():
         if coordinator.data is not None:
             entities.extend(_entities_for_vessel(coordinator, vessel_id, coordinator.data))
-            entry.async_on_unload(
-                coordinator.async_add_listener(
-                    lambda c=coordinator: _sync_vessel_disabled(registry, entry, c)
-                )
-            )
+
+            def _make_listener(c: CrystalVesselCoordinator) -> Callable[[], None]:
+                def _listener() -> None:
+                    _sync_vessel_disabled(registry, entry, c)
+                return _listener
+
+            entry.async_on_unload(coordinator.async_add_listener(_make_listener(coordinator)))
 
     async_add_entities(entities)
 

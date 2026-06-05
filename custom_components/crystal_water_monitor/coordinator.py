@@ -49,7 +49,8 @@ class CrystalVesselCoordinator(DataUpdateCoordinator[ConnectApiAccountVesselV1 |
             return data
         except CrystalAuthError:
             _LOGGER.warning("Auth error fetching vessel %s; triggering reauth", self.vessel_id)
-            self.config_entry.async_start_reauth(self.hass)
+            if self.config_entry is not None:
+                self.config_entry.async_start_reauth(self.hass)
             return self.data
         except CrystalNotFoundError:
             _LOGGER.warning("Vessel %s not found; marking inactive", self.vessel_id)
