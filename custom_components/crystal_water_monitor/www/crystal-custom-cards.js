@@ -1,15 +1,15 @@
 const CARD_VERSION = "1.0.5";
 
 const BADGE_OPTIONS = [
-  { key: "ph",           label: "pH",          suffix: "",     entitySuffix: "_ph" },
-  { key: "orp",          label: "ORP",         suffix: " mV",  entitySuffix: "_orp" },
-  { key: "waterTemp",    label: "Temp",        suffix: "°F",   entitySuffix: "_water_temperature" },
-  { key: "freeChlorine", label: "Cl₂",         suffix: " ppm", entitySuffix: "_free_chlorine" },
-  { key: "totalAlkalinity", label: "TA",       suffix: " ppm", entitySuffix: "_total_alkalinity" },
-  { key: "totalHardness",   label: "TH",       suffix: " ppm", entitySuffix: "_total_hardness" },
-  { key: "cyanuricAcid",    label: "CYA",      suffix: " ppm", entitySuffix: "_cyanuric_acid" },
-  { key: "salt",            label: "Salt",     suffix: " ppm", entitySuffix: "_salt" },
-  { key: "lsi",             label: "LSI",      suffix: "",     entitySuffix: "_lsi" },
+  { key: "ph",              labelKey: "badge.ph",         suffix: "",     entitySuffix: "_ph" },
+  { key: "orp",             labelKey: "badge.orp",        suffix: " mV",  entitySuffix: "_orp" },
+  { key: "waterTemp",       labelKey: "badge.temp",       suffix: "°F",   entitySuffix: "_water_temperature" },
+  { key: "freeChlorine",    labelKey: "badge.chlorine",   suffix: " ppm", entitySuffix: "_free_chlorine" },
+  { key: "totalAlkalinity", labelKey: "badge.alkalinity", suffix: " ppm", entitySuffix: "_total_alkalinity" },
+  { key: "totalHardness",   labelKey: "badge.hardness",   suffix: " ppm", entitySuffix: "_total_hardness" },
+  { key: "cyanuricAcid",    labelKey: "badge.cya",        suffix: " ppm", entitySuffix: "_cyanuric_acid" },
+  { key: "salt",            labelKey: "badge.salt",       suffix: " ppm", entitySuffix: "_salt" },
+  { key: "lsi",             labelKey: "badge.lsi",        suffix: "",     entitySuffix: "_lsi" },
 ];
 
 const TRANSLATIONS = {
@@ -38,6 +38,20 @@ const TRANSLATIONS = {
     "editor.badge_position_left": "Left",
     "editor.badge_position_right": "Right",
     "editor.badge_position_bottom": "Bottom",
+    "editor.time_range": "Time range",
+    "card.open_app": "Open Crystal App",
+    "graph.ph": "pH",
+    "graph.orp": "ORP",
+    "graph.temp": "Water Temperature",
+    "badge.ph": "pH",
+    "badge.orp": "ORP",
+    "badge.temp": "Temp",
+    "badge.chlorine": "Cl₂",
+    "badge.alkalinity": "TA",
+    "badge.hardness": "TH",
+    "badge.cya": "CYA",
+    "badge.salt": "Salt",
+    "badge.lsi": "LSI",
   },
   es: {
     "editor.pool_label": "Piscina o bañera de hidromasaje",
@@ -59,6 +73,25 @@ const TRANSLATIONS = {
     "card.days_ago_other": "hace {n} días",
     "card.years_ago_one": "hace 1 año",
     "card.years_ago_other": "hace {n} años",
+    "editor.badges": "Insignias",
+    "editor.badge_position": "Posición de insignias",
+    "editor.badge_position_left": "Izquierda",
+    "editor.badge_position_right": "Derecha",
+    "editor.badge_position_bottom": "Abajo",
+    "editor.time_range": "Rango de tiempo",
+    "card.open_app": "Abrir Crystal App",
+    "graph.ph": "pH",
+    "graph.orp": "ORP",
+    "graph.temp": "Temperatura del agua",
+    "badge.ph": "pH",
+    "badge.orp": "ORP",
+    "badge.temp": "Temp",
+    "badge.chlorine": "Cl₂",
+    "badge.alkalinity": "TA",
+    "badge.hardness": "TH",
+    "badge.cya": "CYA",
+    "badge.salt": "Sal",
+    "badge.lsi": "LSI",
   },
   fr: {
     "editor.pool_label": "Piscine ou spa",
@@ -80,6 +113,25 @@ const TRANSLATIONS = {
     "card.days_ago_other": "il y a {n} jours",
     "card.years_ago_one": "il y a 1 an",
     "card.years_ago_other": "il y a {n} ans",
+    "editor.badges": "Badges",
+    "editor.badge_position": "Position des badges",
+    "editor.badge_position_left": "Gauche",
+    "editor.badge_position_right": "Droite",
+    "editor.badge_position_bottom": "Bas",
+    "editor.time_range": "Plage de temps",
+    "card.open_app": "Ouvrir Crystal App",
+    "graph.ph": "pH",
+    "graph.orp": "ORP",
+    "graph.temp": "Température de l'eau",
+    "badge.ph": "pH",
+    "badge.orp": "ORP",
+    "badge.temp": "Temp",
+    "badge.chlorine": "Cl₂",
+    "badge.alkalinity": "TA",
+    "badge.hardness": "TH",
+    "badge.cya": "CYA",
+    "badge.salt": "Sel",
+    "badge.lsi": "LSI",
   },
 };
 
@@ -145,7 +197,7 @@ class CrystalDiscCardEditor extends HTMLElement {
       <div class="section-label">${t(this._hass, "editor.badges")}</div>
       <div class="badge-grid">
         ${BADGE_OPTIONS.map(b => `
-          <div class="badge-chip ${badges.includes(b.key) ? "selected" : ""}" data-badge="${b.key}">${b.label}</div>
+          <div class="badge-chip ${badges.includes(b.key) ? "selected" : ""}" data-badge="${b.key}">${t(this._hass, b.labelKey)}</div>
         `).join("")}
       </div>
       <div class="section-label">${t(this._hass, "editor.badge_position")}</div>
@@ -284,7 +336,7 @@ class CrystalDiscCard extends HTMLElement {
           gap: 8px;
           white-space: nowrap;
         ">
-          <span style="font-size:13px;font-weight:600;color:${labelColor};">${def.label}</span>
+          <span style="font-size:13px;font-weight:600;color:${labelColor};">${t(this._hass, def.labelKey)}</span>
           <span style="font-size:13px;color:${textColor};">${display}${def.suffix && value != null ? `<span style="font-size:11px;"> ${def.suffix}</span>` : ""}</span>
         </div>`;
     }).filter(Boolean).join("");
@@ -547,7 +599,7 @@ class CrystalActionsCard extends HTMLElement {
           <div style="padding:10px 16px;text-align:center;">
             <a href="https://cwmu.us/app/vessels/${vesselId}"
                style="font-size:12px;color:var(--primary-color);text-decoration:none;">
-              Open Crystal App
+              ${t(this._hass, "card.open_app")}
             </a>
           </div>
         ` : ""}
@@ -558,11 +610,182 @@ class CrystalActionsCard extends HTMLElement {
 
 if (!customElements.get("crystal-actions-card")) customElements.define("crystal-actions-card", CrystalActionsCard);
 
+// --- Graph Card Base ---
+
+class CrystalGraphCardBase extends HTMLElement {
+  constructor() {
+    super();
+  }
+
+  static getConfigElement(editorTag) {
+    return document.createElement(editorTag);
+  }
+
+  static getStubConfig() {
+    return { device_id: "" };
+  }
+
+  set hass(hass) {
+    this._hass = hass;
+    this._render().catch(() => {});
+  }
+
+  setConfig(config) {
+    this._config = config;
+    if (!this.shadowRoot) this.attachShadow({ mode: "open" });
+  }
+
+  getCardSize() { return 3; }
+
+  _findEntity() {
+    if (!this._hass || !this._config?.device_id) return null;
+    const deviceId = this._config.device_id;
+    return Object.values(this._hass.states).find((state) => {
+      const entityDeviceId = this._hass.entities?.[state.entity_id]?.device_id;
+      return entityDeviceId === deviceId && state.entity_id.endsWith(this.constructor.entitySuffix);
+    });
+  }
+
+  async _render() {
+    if (!this.shadowRoot) this.attachShadow({ mode: "open" });
+    const entity = this._findEntity();
+
+    if (!entity) {
+      this.shadowRoot.innerHTML = this._config?.device_id
+        ? ""
+        : `<ha-card><div style="padding:16px;color:var(--secondary-text-color)">${t(this._hass, "card.no_vessel_selected")}</div></ha-card>`;
+      return;
+    }
+
+    const cardConfig = {
+      type: "history-graph",
+      entities: [{ entity: entity.entity_id, color: "#2166aa" }],
+      title: t(this._hass, this.constructor.labelKey),
+      hours_to_show: this._config?.hours_to_show ?? 24,
+      min_y_axis: this.constructor.minY,
+      max_y_axis: this.constructor.maxY,
+      extend_to: false,
+    };
+
+    if (!this._graphCard || this._lastEntityId !== entity.entity_id || this._lastHours !== (this._config?.hours_to_show ?? 24)) {
+      this._lastEntityId = entity.entity_id;
+      this._lastHours = this._config?.hours_to_show ?? 24;
+      const helpers = await window.loadCardHelpers?.();
+      if (!helpers) return;
+      this._graphCard = await helpers.createCardElement(cardConfig);
+      this._graphCard.hass = this._hass;
+      this.shadowRoot.innerHTML = `<div style="position:relative;"><img src="${_wordmarkUrl()}" style="position:absolute;top:12px;right:56px;height:20px;opacity:0.5;z-index:1;pointer-events:none;" /></div>`;
+      this.shadowRoot.querySelector("div").appendChild(this._graphCard);
+    } else {
+      this._graphCard.hass = this._hass;
+    }
+  }
+}
+
+// --- Shared Graph Card Editor ---
+
+class CrystalGraphCardEditor extends HTMLElement {
+  set hass(hass) {
+    this._hass = hass;
+    const s = this.shadowRoot?.querySelector("ha-selector");
+    if (s) s.hass = hass;
+  }
+  setConfig(config) { this._config = config; this._render(); }
+
+  _dispatch(patch) {
+    this.dispatchEvent(new CustomEvent("config-changed", {
+      detail: { config: { ...this._config, ...patch } },
+      bubbles: true, composed: true,
+    }));
+  }
+
+  _render() {
+    if (!this.shadowRoot) this.attachShadow({ mode: "open" });
+    const hours = this._config?.hours_to_show ?? 24;
+    this.shadowRoot.innerHTML = `
+      <style>
+        .row { padding: 8px 0; }
+        .section-label { font-size:12px;font-weight:600;color:var(--secondary-text-color);text-transform:uppercase;letter-spacing:0.05em;padding:12px 0 4px; }
+        .hours-row { display:flex;gap:8px;padding:4px 0; }
+        .hours-btn { flex:1;padding:6px;border-radius:8px;border:1px solid var(--divider-color);font-size:13px;cursor:pointer;text-align:center;background:none;color:var(--primary-text-color); }
+        .hours-btn.selected { background:#2166aa;color:white;border-color:#2166aa; }
+      </style>
+      <div class="row"><ha-selector label="${t(this._hass, "editor.pool_label")}"></ha-selector></div>
+      <div class="section-label">${t(this._hass, "editor.time_range")}</div>
+      <div class="hours-row">
+        ${[6, 12, 24, 48, 72].map(h => `
+          <button class="hours-btn ${hours === h ? "selected" : ""}" data-hours="${h}">${h}h</button>
+        `).join("")}
+      </div>
+    `;
+    const s = this.shadowRoot.querySelector("ha-selector");
+    if (this._hass) s.hass = this._hass;
+    s.selector = { device: { integration: "crystal_water_monitor" } };
+    s.value = this._config?.device_id || "";
+    s.addEventListener("value-changed", (e) => this._dispatch({ device_id: e.detail.value }));
+    this.shadowRoot.querySelectorAll(".hours-btn").forEach(btn => {
+      btn.addEventListener("click", () => this._dispatch({ hours_to_show: parseInt(btn.dataset.hours) }));
+    });
+  }
+}
+if (!customElements.get("crystal-graph-card-editor")) customElements.define("crystal-graph-card-editor", CrystalGraphCardEditor);
+
+// --- pH Graph Card ---
+
+class CrystalPhGraphCard extends CrystalGraphCardBase {
+  static entitySuffix = "_ph";
+  static labelKey = "graph.ph";
+  static minY = 6;
+  static maxY = 8;
+  static getConfigElement() { return document.createElement("crystal-graph-card-editor"); }
+  static getStubConfig() { return { device_id: "", hours_to_show: 24 }; }
+}
+if (!customElements.get("crystal-ph-graph-card")) customElements.define("crystal-ph-graph-card", CrystalPhGraphCard);
+
+// --- ORP Graph Card ---
+
+class CrystalOrpGraphCard extends CrystalGraphCardBase {
+  static entitySuffix = "_orp";
+  static labelKey = "graph.orp";
+  static minY = 0;
+  static maxY = 1000;
+  static getConfigElement() { return document.createElement("crystal-graph-card-editor"); }
+  static getStubConfig() { return { device_id: "", hours_to_show: 24 }; }
+}
+if (!customElements.get("crystal-orp-graph-card")) customElements.define("crystal-orp-graph-card", CrystalOrpGraphCard);
+
+// --- Temp Graph Card ---
+
+class CrystalTempGraphCard extends CrystalGraphCardBase {
+  static entitySuffix = "_water_temperature";
+  static labelKey = "graph.temp";
+  static minY = 50;
+  static maxY = 104;
+  static getConfigElement() { return document.createElement("crystal-graph-card-editor"); }
+  static getStubConfig() { return { device_id: "", hours_to_show: 24 }; }
+}
+if (!customElements.get("crystal-temp-graph-card")) customElements.define("crystal-temp-graph-card", CrystalTempGraphCard);
+
 window.customCards = window.customCards || [];
 window.customCards.push({
   type: "crystal-disc-card",
   name: "Crystal Disc",
   description: "Water status disc for Crystal Water Monitor",
+});
+window.customCards.push({
+  type: "crystal-ph-graph-card",
+  name: "Crystal pH Graph",
+  description: "24h pH history for a Crystal Water Monitor vessel",
+});
+window.customCards.push({
+  type: "crystal-orp-graph-card",
+  name: "Crystal ORP Graph",
+  description: "24h ORP history for a Crystal Water Monitor vessel",
+});
+window.customCards.push({
+  type: "crystal-temp-graph-card",
+  name: "Crystal Temp Graph",
+  description: "24h water temperature history for a Crystal Water Monitor vessel",
 });
 window.customCards.push({
   type: "crystal-actions-card",
