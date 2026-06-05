@@ -20,27 +20,45 @@ from .coordinator import CrystalDataUpdateCoordinator
 _LOGGER = logging.getLogger(__name__)
 
 
+def _entities_for_vessel(
+    coordinator: CrystalDataUpdateCoordinator,
+    vessel_id: int,
+    vessel_data,
+) -> list[SensorEntity]:
+    entities: list[SensorEntity] = [
+        WaterStatusSensor(coordinator, vessel_id, vessel_data),
+        ActionsPendingSensor(coordinator, vessel_id, vessel_data),
+        LastUpdatedSensor(coordinator, vessel_id, vessel_data),
+        LastSyncedSensor(coordinator, vessel_id, vessel_data),
+        MonitorSerialSensor(coordinator, vessel_id, vessel_data),
+        SensorSerialSensor(coordinator, vessel_id, vessel_data),
+    ]
+    for reading_type, name, unit, device_class, entity_category, icon in READING_SENSORS:
+        entities.append(
+            ReadingSensor(coordinator, vessel_id, vessel_data, reading_type, name, unit, device_class, entity_category, icon)
+        )
+    return entities
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     coordinator: CrystalDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
+    known_vessel_ids: set[int] = set()
 
-    entities: list[SensorEntity] = []
-    for vessel_id, vessel_data in coordinator.vessel_data.items():
-        entities.append(WaterStatusSensor(coordinator, vessel_id, vessel_data))
-        entities.append(ActionsPendingSensor(coordinator, vessel_id, vessel_data))
-        entities.append(LastUpdatedSensor(coordinator, vessel_id, vessel_data))
-        entities.append(LastSyncedSensor(coordinator, vessel_id, vessel_data))
-        entities.append(MonitorSerialSensor(coordinator, vessel_id, vessel_data))
-        entities.append(SensorSerialSensor(coordinator, vessel_id, vessel_data))
-        for reading_type, name, unit, device_class, entity_category, icon in READING_SENSORS:
-            entities.append(
-                ReadingSensor(coordinator, vessel_id, vessel_data, reading_type, name, unit, device_class, entity_category, icon)
-            )
+    def _add_new_vessels() -> None:
+        new_entities: list[SensorEntity] = []
+        for vessel_id, vessel_data in coordinator.vessel_data.items():
+            if vessel_id not in known_vessel_ids:
+                known_vessel_ids.add(vessel_id)
+                new_entities.extend(_entities_for_vessel(coordinator, vessel_id, vessel_data))
+        if new_entities:
+            async_add_entities(new_entities)
 
-    async_add_entities(entities)
+    _add_new_vessels()
+    entry.async_on_unload(coordinator.async_add_listener(lambda: _add_new_vessels()))
 
 
 def _last_updated(vessel: ConnectApiAccountVesselV1) -> str | None:
