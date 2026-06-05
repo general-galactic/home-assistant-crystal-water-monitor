@@ -22,10 +22,12 @@ from custom_components.crystal_water_monitor.sensor import (
 from .conftest import make_vessel, make_reading
 
 
-def make_coordinator(vessel_data: dict) -> MagicMock:
+def make_coordinator(vessel=None, inactive=False):
     coord = MagicMock()
-    coord.vessel_data = vessel_data
+    coord.data = vessel
+    coord.inactive = inactive
     coord.last_synced = None
+    coord.vessel_id = vessel.vessel_id if vessel else 1
     return coord
 
 
@@ -41,14 +43,14 @@ def make_coordinator(vessel_data: dict) -> MagicMock:
 ])
 def test_water_status_sensor_value(color, expected):
     vessel = make_vessel(water_status_color=color)
-    coord = make_coordinator({1: vessel})
+    coord = make_coordinator(vessel)
     sensor = WaterStatusSensor(coord, 1, vessel)
     assert sensor.native_value == expected
 
 
 def test_water_status_sensor_extra_attributes():
     vessel = make_vessel(num_actions=2)
-    coord = make_coordinator({1: vessel})
+    coord = make_coordinator(vessel)
     sensor = WaterStatusSensor(coord, 1, vessel)
     attrs = sensor.extra_state_attributes
     assert attrs["waterStatusColor"] == "blue"
@@ -59,11 +61,24 @@ def test_water_status_sensor_extra_attributes():
 
 def test_water_status_sensor_missing_vessel():
     vessel = make_vessel()
-    coord = make_coordinator({})  # vessel removed from coordinator
+    coord = make_coordinator(vessel=None)
     sensor = WaterStatusSensor(coord, 1, vessel)
-    # Should not raise; falls back gracefully
     assert sensor.native_value == "Unknown"
     assert sensor.extra_state_attributes == {}
+
+
+def test_water_status_sensor_unavailable_when_inactive():
+    vessel = make_vessel()
+    coord = make_coordinator(vessel, inactive=True)
+    sensor = WaterStatusSensor(coord, 1, vessel)
+    assert sensor.available is False
+
+
+def test_water_status_sensor_available_when_active():
+    vessel = make_vessel()
+    coord = make_coordinator(vessel, inactive=False)
+    sensor = WaterStatusSensor(coord, 1, vessel)
+    assert sensor.available is True
 
 
 # ---------------------------------------------------------------------------
@@ -72,14 +87,14 @@ def test_water_status_sensor_missing_vessel():
 
 def test_actions_pending_zero():
     vessel = make_vessel(num_actions=0)
-    coord = make_coordinator({1: vessel})
+    coord = make_coordinator(vessel)
     sensor = ActionsPendingSensor(coord, 1, vessel)
     assert sensor.native_value == 0
 
 
 def test_actions_pending_count():
     vessel = make_vessel(num_actions=3)
-    coord = make_coordinator({1: vessel})
+    coord = make_coordinator(vessel)
     sensor = ActionsPendingSensor(coord, 1, vessel)
     assert sensor.native_value == 3
     assert len(sensor.extra_state_attributes["actions"]) == 3
@@ -87,7 +102,7 @@ def test_actions_pending_count():
 
 def test_actions_pending_missing_vessel():
     vessel = make_vessel()
-    coord = make_coordinator({})
+    coord = make_coordinator(vessel=None)
     sensor = ActionsPendingSensor(coord, 1, vessel)
     assert sensor.native_value == 0
     assert sensor.extra_state_attributes == {"actions": []}
@@ -101,7 +116,7 @@ def test_last_updated_from_disc():
     vessel = make_vessel()
     ts = datetime(2024, 6, 1, 10, 0, 0, tzinfo=timezone.utc)
     vessel.disc.last_updated_date = ts
-    coord = make_coordinator({1: vessel})
+    coord = make_coordinator(vessel)
     sensor = LastUpdatedSensor(coord, 1, vessel)
     assert sensor.native_value == ts
 
@@ -109,20 +124,13 @@ def test_last_updated_from_disc():
 def test_last_updated_naive_datetime_gets_utc():
     vessel = make_vessel()
     vessel.disc.last_updated_date = None
-    # Provide a reading with a naive datetime via fallback path
     naive_dt = datetime(2024, 6, 1, 10, 0, 0)
-    r = make_reading()
-    r.var_date = naive_dt
-    vessel.readings.ph = r
 
-    # Patch _last_updated to return naive ISO string
-    from custom_components.crystal_water_monitor.sensor import _last_updated
     import custom_components.crystal_water_monitor.sensor as sensor_module
-
     original = sensor_module._last_updated
     sensor_module._last_updated = lambda v: naive_dt.isoformat()
 
-    coord = make_coordinator({1: vessel})
+    coord = make_coordinator(vessel)
     sensor = LastUpdatedSensor(coord, 1, vessel)
     result = sensor.native_value
 
@@ -133,7 +141,7 @@ def test_last_updated_naive_datetime_gets_utc():
 
 def test_last_updated_missing_vessel():
     vessel = make_vessel()
-    coord = make_coordinator({})
+    coord = make_coordinator(vessel=None)
     sensor = LastUpdatedSensor(coord, 1, vessel)
     assert sensor.native_value is None
 
@@ -144,7 +152,7 @@ def test_last_updated_missing_vessel():
 
 def test_last_synced_none_initially():
     vessel = make_vessel()
-    coord = make_coordinator({1: vessel})
+    coord = make_coordinator(vessel)
     coord.last_synced = None
     sensor = LastSyncedSensor(coord, 1, vessel)
     assert sensor.native_value is None
@@ -153,7 +161,7 @@ def test_last_synced_none_initially():
 def test_last_synced_returns_coordinator_value():
     vessel = make_vessel()
     ts = datetime(2024, 6, 1, 12, 0, 0, tzinfo=timezone.utc)
-    coord = make_coordinator({1: vessel})
+    coord = make_coordinator(vessel)
     coord.last_synced = ts
     sensor = LastSyncedSensor(coord, 1, vessel)
     assert sensor.native_value == ts
@@ -165,21 +173,21 @@ def test_last_synced_returns_coordinator_value():
 
 def test_monitor_serial():
     vessel = make_vessel(monitor_serial="MON-ABC")
-    coord = make_coordinator({1: vessel})
+    coord = make_coordinator(vessel)
     sensor = MonitorSerialSensor(coord, 1, vessel)
     assert sensor.native_value == "MON-ABC"
 
 
 def test_sensor_serial():
     vessel = make_vessel(sensor_serial="SEN-XYZ")
-    coord = make_coordinator({1: vessel})
+    coord = make_coordinator(vessel)
     sensor = SensorSerialSensor(coord, 1, vessel)
     assert sensor.native_value == "SEN-XYZ"
 
 
 def test_monitor_serial_missing_vessel():
     vessel = make_vessel()
-    coord = make_coordinator({})
+    coord = make_coordinator(vessel=None)
     sensor = MonitorSerialSensor(coord, 1, vessel)
     assert sensor.native_value is None
 
@@ -204,7 +212,7 @@ def _make_reading_sensor(coord, vessel_id, vessel, reading_type="ph"):
 
 def test_reading_sensor_value():
     vessel = make_vessel(ph_value=7.4)
-    coord = make_coordinator({1: vessel})
+    coord = make_coordinator(vessel)
     sensor = _make_reading_sensor(coord, 1, vessel)
     assert sensor.native_value == 7.4
 
@@ -212,7 +220,7 @@ def test_reading_sensor_value():
 def test_reading_sensor_rounds_to_2_decimal_places():
     vessel = make_vessel()
     vessel.readings.ph = make_reading(value=7.456789)
-    coord = make_coordinator({1: vessel})
+    coord = make_coordinator(vessel)
     sensor = _make_reading_sensor(coord, 1, vessel)
     assert sensor.native_value == 7.46
 
@@ -220,7 +228,7 @@ def test_reading_sensor_rounds_to_2_decimal_places():
 def test_reading_sensor_range_midpoint():
     vessel = make_vessel()
     vessel.readings.ph = make_reading(value=None, range_from=7.2, range_to=7.8)
-    coord = make_coordinator({1: vessel})
+    coord = make_coordinator(vessel)
     sensor = _make_reading_sensor(coord, 1, vessel)
     assert sensor.native_value == 7.5
 
@@ -230,7 +238,7 @@ def test_reading_sensor_none_when_no_value_or_range():
     r = make_reading(value=None)
     r.range = None
     vessel.readings.ph = r
-    coord = make_coordinator({1: vessel})
+    coord = make_coordinator(vessel)
     sensor = _make_reading_sensor(coord, 1, vessel)
     assert sensor.native_value is None
 
@@ -238,14 +246,21 @@ def test_reading_sensor_none_when_no_value_or_range():
 def test_reading_sensor_unavailable_when_no_reading():
     vessel = make_vessel()
     vessel.readings.ph = None
-    coord = make_coordinator({1: vessel})
+    coord = make_coordinator(vessel)
+    sensor = _make_reading_sensor(coord, 1, vessel)
+    assert sensor.available is False
+
+
+def test_reading_sensor_unavailable_when_inactive():
+    vessel = make_vessel()
+    coord = make_coordinator(vessel, inactive=True)
     sensor = _make_reading_sensor(coord, 1, vessel)
     assert sensor.available is False
 
 
 def test_reading_sensor_available_when_reading_present():
     vessel = make_vessel(ph_value=7.2)
-    coord = make_coordinator({1: vessel})
+    coord = make_coordinator(vessel)
     sensor = _make_reading_sensor(coord, 1, vessel)
     assert sensor.available is True
 
@@ -256,7 +271,7 @@ def test_reading_sensor_extra_attributes():
     r.status_since_date = None
     r.range = None
     vessel.readings.ph = r
-    coord = make_coordinator({1: vessel})
+    coord = make_coordinator(vessel)
     sensor = _make_reading_sensor(coord, 1, vessel)
     attrs = sensor.extra_state_attributes
     assert attrs["status"] == "ok"
@@ -267,7 +282,7 @@ def test_reading_sensor_extra_attributes():
 def test_reading_sensor_ranged_attribute_set():
     vessel = make_vessel()
     vessel.readings.ph = make_reading(value=None, range_from=7.0, range_to=7.6)
-    coord = make_coordinator({1: vessel})
+    coord = make_coordinator(vessel)
     sensor = _make_reading_sensor(coord, 1, vessel)
     attrs = sensor.extra_state_attributes
     assert attrs.get("is_ranged") is True
@@ -276,9 +291,8 @@ def test_reading_sensor_ranged_attribute_set():
 
 
 def test_reading_sensor_camelcase_to_snake():
-    """waterTemp reading_type maps to vessel.readings.water_temp."""
     vessel = make_vessel()
-    coord = make_coordinator({1: vessel})
+    coord = make_coordinator(vessel)
     sensor = ReadingSensor(
         coordinator=coord,
         vessel_id=1,
@@ -289,20 +303,19 @@ def test_reading_sensor_camelcase_to_snake():
         device_class="temperature",
         entity_category=None,
     )
-    # native_value should come from readings.water_temp (value=28.0)
     assert sensor.native_value == 28.0
 
 
 def test_reading_sensor_unique_id():
     vessel = make_vessel(vessel_id=5)
-    coord = make_coordinator({5: vessel})
+    coord = make_coordinator(vessel)
     sensor = _make_reading_sensor(coord, 5, vessel, reading_type="orp")
     assert sensor._attr_unique_id == "5_orp"
 
 
 def test_reading_sensor_missing_vessel_returns_none():
     vessel = make_vessel()
-    coord = make_coordinator({})
+    coord = make_coordinator(vessel=None)
     sensor = _make_reading_sensor(coord, 1, vessel)
     assert sensor.native_value is None
     assert sensor.extra_state_attributes == {}
