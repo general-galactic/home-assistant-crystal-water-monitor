@@ -72,6 +72,30 @@ async def _async_register_lovelace_resource(hass: HomeAssistant) -> None:
         _LOGGER.warning("Could not register Lovelace resource: %s", err)
 
 
+_STATIC_FILES = [
+    ("/crystal_water_monitor/crystal-custom-cards.js", "crystal-custom-cards.js", False),
+    ("/crystal_water_monitor/disc-blue.svg", "disc-blue.svg", True),
+    ("/crystal_water_monitor/disc-orange.svg", "disc-orange.svg", True),
+    ("/crystal_water_monitor/disc-red.svg", "disc-red.svg", True),
+    ("/crystal_water_monitor/disc-gray.svg", "disc-gray.svg", True),
+    ("/crystal_water_monitor/CWM_icon_wordmark_white.svg", "CWM_icon_wordmark_white.svg", True),
+    ("/crystal_water_monitor/CWM_icon_wordmark_color.svg", "CWM_icon_wordmark_color.svg", True),
+]
+
+
+async def _async_register_static_paths(hass: HomeAssistant) -> None:
+    try:
+        from homeassistant.components.http import StaticPathConfig  # noqa: PLC0415
+        await hass.http.async_register_static_paths([
+            StaticPathConfig(url, str(_WWW_DIR / filename), cache_headers=cache)
+            for url, filename, cache in _STATIC_FILES
+        ])
+    except ImportError:
+        # Older HA versions use the legacy per-path API
+        for url, filename, cache in _STATIC_FILES:
+            hass.http.register_static_path(url, str(_WWW_DIR / filename), cache_headers=cache)
+
+
 def _get_config(entry: ConfigEntry) -> dict:
     """Merge entry data with options, options taking precedence."""
     return {**entry.data, **entry.options}
@@ -81,22 +105,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})
     if not hass.data.get(f"{DOMAIN}_static_registered"):
         hass.data[f"{DOMAIN}_static_registered"] = True
-        from homeassistant.components.http import StaticPathConfig  # noqa: PLC0415
-        await hass.http.async_register_static_paths([
-            StaticPathConfig(
-                "/crystal_water_monitor/crystal-custom-cards.js",
-                str(_WWW_DIR / "crystal-custom-cards.js"),
-                cache_headers=False,
-            ),
-            *[
-                StaticPathConfig(
-                    f"/crystal_water_monitor/{name}",
-                    str(_WWW_DIR / name),
-                    cache_headers=True,
-                )
-                for name in ["disc-blue.svg", "disc-orange.svg", "disc-red.svg", "disc-gray.svg", "CWM_icon_wordmark_white.svg", "CWM_icon_wordmark_color.svg"]
-            ],
-        ])
+        await _async_register_static_paths(hass)
         await _async_register_lovelace_resource(hass)
     config = _get_config(entry)
     client = await hass.async_add_executor_job(
