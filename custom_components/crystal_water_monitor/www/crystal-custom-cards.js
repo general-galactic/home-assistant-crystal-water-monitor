@@ -225,13 +225,13 @@ class CrystalDiscCard extends HTMLElement {
     const text = disc.text || entity.state || "";
     const vesselId = disc.vesselId;
     const isMobileApp = /HomeAssistant\/\d/.test(navigator.userAgent);
-    const appUrl = isMobileApp && vesselId ? `https://crystalwatermonitor.com/app/vessels/${vesselId}` : null;
+    const appUrl = isMobileApp && vesselId ? `https://cwmu.us/app/vessels/${vesselId}` : null;
 
     const lastUpdated = this._relativeTime(disc.lastUpdatedDate);
     
     const tempC = disc.tempC;
     const tempF = tempC != null ? ((tempC * 9) / 5 + 32).toFixed(0) : null;
-    const temp = tempF != null ? `${tempF}°F` : "";
+    const temp = tempF != null ? `<div style="position:relative;display:inline-block;"><span style="font-size:51px;font-weight:500;line-height:1;">${tempF}</span><span style="position:absolute;top:4px;left:100%;font-size:18px;font-weight:300;line-height:1;margin-left:2px;">°F</span></div>` : "";
 
     const inner = `
       <div style="
@@ -248,16 +248,18 @@ class CrystalDiscCard extends HTMLElement {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
             color: white;
             text-align: center;
-            padding: 40px;
+            padding: 38px 40px 36px;
             box-sizing: border-box;
           ">
-            <div style="font-size: 13px; font-weight: 600; margin-bottom: 6px;">${name}</div>
-            <div style="font-size: 44px; font-weight: 700; line-height: 1;">${temp}</div>
-            <div style="font-size: 13px; margin-top: 6px;">${text}</div>
-            <div id="crystal-last-updated" style="font-size: 11px; margin-top: 10px; opacity: 0.85;">${lastUpdated}</div>
+            <div style="font-size: 15px; font-weight: 400;">${name}</div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:0px;">
+              <div style="display:flex;justify-content:center;">${temp}</div>
+              <div style="font-size: 18px;">${text}</div>
+            </div>
+            <div id="crystal-last-updated" style="font-size: 13px; opacity: 0.85;">${lastUpdated}</div>
           </div>
         </div>
 
@@ -439,7 +441,7 @@ class CrystalActionsCard extends HTMLElement {
         ${rows}
         ${isMobileApp && vesselId ? `
           <div style="padding:10px 16px;text-align:center;">
-            <a href="https://crystalwatermonitor.com/app/vessels/${vesselId}"
+            <a href="https://cwmu.us/app/vessels/${vesselId}"
                style="font-size:12px;color:var(--primary-color);text-decoration:none;">
               Open Crystal App
             </a>
