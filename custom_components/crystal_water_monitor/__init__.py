@@ -76,12 +76,13 @@ async def _async_register_lovelace_resource(hass: HomeAssistant) -> None:
 
 _STATIC_FILES = [
     ("/crystal_water_monitor/crystal-custom-cards.js", "crystal-custom-cards.js", False),
-    ("/crystal_water_monitor/disc-blue.svg", "disc-blue.svg", True),
-    ("/crystal_water_monitor/disc-orange.svg", "disc-orange.svg", True),
-    ("/crystal_water_monitor/disc-red.svg", "disc-red.svg", True),
-    ("/crystal_water_monitor/disc-gray.svg", "disc-gray.svg", True),
-    ("/crystal_water_monitor/CWM_icon_wordmark_white.svg", "CWM_icon_wordmark_white.svg", True),
-    ("/crystal_water_monitor/CWM_icon_wordmark_color.svg", "CWM_icon_wordmark_color.svg", True),
+    ("/crystal_water_monitor/images/disc-blue.svg", "images/disc-blue.svg", True),
+    ("/crystal_water_monitor/images/disc-orange.svg", "images/disc-orange.svg", True),
+    ("/crystal_water_monitor/images/disc-red.svg", "images/disc-red.svg", True),
+    ("/crystal_water_monitor/images/disc-gray.svg", "images/disc-gray.svg", True),
+    ("/crystal_water_monitor/images/CWM_icon_wordmark_white.svg", "images/CWM_icon_wordmark_white.svg", True),
+    ("/crystal_water_monitor/images/CWM_icon_wordmark_color.svg", "images/CWM_icon_wordmark_color.svg", True),
+    ("/crystal_water_monitor/images/CWM_icon_white.svg", "images/CWM_icon_white.svg", True),
 ]
 
 

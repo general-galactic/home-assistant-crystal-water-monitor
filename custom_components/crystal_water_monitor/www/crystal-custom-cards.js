@@ -143,7 +143,7 @@ function t(hass, key, vars) {
 }
 
 function _wordmarkUrl() {
-  return "/crystal_water_monitor/CWM_icon_wordmark_color.svg";
+  return "/crystal_water_monitor/images/CWM_icon_wordmark_color.svg";
 }
 
 // --- Editor ---
@@ -350,8 +350,8 @@ class CrystalDiscCard extends HTMLElement {
   }
 
   _discUrl(color) {
-    const name = ["blue", "orange", "red", "gray"].includes(color) ? color : "blue";
-    return `/crystal_water_monitor/disc-${name}.svg`;
+    const colorName = ["blue", "orange", "red", "gray"].includes(color) ? color : "blue";
+    return `/crystal_water_monitor/images/disc-${colorName}.svg`;
   }
 
   _render() {
