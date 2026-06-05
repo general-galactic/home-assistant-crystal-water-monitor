@@ -223,6 +223,9 @@ class CrystalDiscCard extends HTMLElement {
     const discUrl = this._discUrl(color);
     const name = disc.name || entity.attributes.friendly_name || "";
     const text = disc.text || entity.state || "";
+    const vesselId = disc.vesselId;
+    const isMobileApp = /HomeAssistant\/\d/.test(navigator.userAgent);
+    const appUrl = isMobileApp && vesselId ? `https://crystalwatermonitor.com/app/vessels/${vesselId}` : null;
 
     const lastUpdated = this._relativeTime(disc.lastUpdatedDate);
     
@@ -237,8 +240,8 @@ class CrystalDiscCard extends HTMLElement {
         align-items: center;
         padding: 24px;
       ">
-        <div style="position: relative; width: 240px; height: 240px;">
-          <img src="${discUrl}" style="width: 100%; height: 100%;" />
+        <div style="position: relative; width: 240px; height: 240px;${appUrl ? "cursor:pointer;" : ""}" ${appUrl ? `data-app-url="${appUrl}"` : ""}>
+          <img src="${discUrl}" style="width: 100%; height: 100%; pointer-events:none;" />
           <div style="
             position: absolute;
             inset: 0;
@@ -265,6 +268,12 @@ class CrystalDiscCard extends HTMLElement {
       this.shadowRoot.innerHTML = `<div style="background:transparent;">${inner}</div>`;
     } else {
       this.shadowRoot.innerHTML = `<ha-card>${inner}</ha-card>`;
+    }
+
+    if (appUrl) {
+      this.shadowRoot.querySelector("[data-app-url]")?.addEventListener("click", () => {
+        window.open(appUrl, "_blank");
+      });
     }
   }
 }
@@ -394,9 +403,11 @@ class CrystalActionsCard extends HTMLElement {
 
     const actions = entity.attributes.actions || [];
     const vesselName = entity.attributes.name || "";
+    const vesselId = entity.attributes.vesselId;
     const showDetails = this._config?.show_details !== false;
     const showIcons = this._config?.show_icons !== false;
     const showLogo = this._config?.show_logo !== false;
+    const isMobileApp = /HomeAssistant\/\d/.test(navigator.userAgent);
 
     const rows = actions.length === 0
       ? `<div style="padding:16px;color:var(--secondary-text-color)">${t(this._hass, "card.no_actions")}</div>`
@@ -426,6 +437,14 @@ class CrystalActionsCard extends HTMLElement {
           ${showLogo ? `<img src="${_wordmarkUrl()}" style="height:30px;" />` : ""}
         </div>
         ${rows}
+        ${isMobileApp && vesselId ? `
+          <div style="padding:10px 16px;text-align:center;">
+            <a href="https://crystalwatermonitor.com/app/vessels/${vesselId}"
+               style="font-size:12px;color:var(--primary-color);text-decoration:none;">
+              Open Crystal App
+            </a>
+          </div>
+        ` : ""}
       </ha-card>
     `;
   }

@@ -29,4 +29,15 @@ Displays the water status disc from the app for a pool or hot tub — color-code
 Lists the recommended water care actions for your pool or hot tub.
 
 
+## Thanks
+
+Thanks to Max Herrera for getting us started on this project and helping us get it out the door.
+
+
+## Legal
+
+[Terms of Service](https://crystalwatermonitor.com/policies/terms-of-service)
+
+[Privacy Policy](https://crystalwatermonitor.com/policies/privacy-policy)
+
 > **Proprietary Software** — This integration is not open source. Copying, modification, or redistribution is prohibited. See [LICENSE](LICENSE) for details.

@@ -147,6 +147,7 @@ class WaterStatusSensor(CrystalSensorBase):
             "tempC": disc.temp_c,
             "lastUpdatedDate": _last_updated(vessel),
             "waterStatusColor": disc.water_status_color.value,
+            "vesselId": self._vessel_id,
             "actions": [a.to_dict() for a in vessel.actions],
         }
 
