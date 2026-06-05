@@ -1,4 +1,4 @@
-const CARD_VERSION = "1.0.5";
+const CARD_VERSION = "1.0.6";
 
 const BADGE_OPTIONS = [
   { key: "ph",              labelKey: "badge.ph",         suffix: "",     entitySuffix: "_ph" },
