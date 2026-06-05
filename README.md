@@ -4,6 +4,7 @@ The official Home Assistant integration from [Crystal Water Monitor](https://www
 
 [See Features & Screenshots](https://crystalwatermonitor.com/pages/integrations)
 
+
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=%40general-galactic&repository=home-assistant-crystal-water-monitor&category=Integration)
 
 ## Prerequisites
