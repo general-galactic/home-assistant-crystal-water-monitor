@@ -16,13 +16,13 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .api import ConnectApiAccountVesselV1, ConnectAPIReadingV1
 from .const import DOMAIN, READING_SENSORS, WATER_STATUS_MAP
-from .coordinator import CrystalDataUpdateCoordinator
+from .coordinator import CrystalVesselCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
 
 def _entities_for_vessel(
-    coordinator: CrystalDataUpdateCoordinator,
+    coordinator: CrystalVesselCoordinator,
     vessel_id: int,
     vessel_data,
 ) -> list[SensorEntity]:
@@ -46,41 +46,41 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    coordinator: CrystalDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
-    known_vessel_ids: set[int] = set()
-
+    coordinators: dict[int, CrystalVesselCoordinator] = hass.data[DOMAIN][entry.entry_id]["coordinators"]
     registry = er.async_get(hass)
+    entities: list[SensorEntity] = []
 
-    def _add_new_vessels() -> None:
-        new_entities: list[SensorEntity] = []
-        for vessel_id, vessel_data in coordinator.vessel_data.items():
-            if vessel_id not in known_vessel_ids:
-                known_vessel_ids.add(vessel_id)
-                new_entities.extend(_entities_for_vessel(coordinator, vessel_id, vessel_data))
-        if new_entities:
-            async_add_entities(new_entities)
-        _sync_disabled_vessels()
-
-    def _sync_disabled_vessels() -> None:
-        for entity_entry in er.async_entries_for_config_entry(registry, entry.entry_id):
-            vessel_id = _vessel_id_from_unique_id(entity_entry.unique_id)
-            if vessel_id is None:
-                continue
-            should_disable = vessel_id in coordinator.inactive_vessel_ids
-            currently_disabled = entity_entry.disabled_by == er.RegistryEntryDisabler.INTEGRATION
-            if should_disable and not currently_disabled:
-                registry.async_update_entity(
-                    entity_entry.entity_id,
-                    disabled_by=er.RegistryEntryDisabler.INTEGRATION,
+    for vessel_id, coordinator in coordinators.items():
+        if coordinator.data is not None:
+            entities.extend(_entities_for_vessel(coordinator, vessel_id, coordinator.data))
+            entry.async_on_unload(
+                coordinator.async_add_listener(
+                    lambda c=coordinator: _sync_vessel_disabled(registry, entry, c)
                 )
-            elif not should_disable and currently_disabled:
-                registry.async_update_entity(
-                    entity_entry.entity_id,
-                    disabled_by=None,
-                )
+            )
 
-    _add_new_vessels()
-    entry.async_on_unload(coordinator.async_add_listener(lambda: _add_new_vessels()))
+    async_add_entities(entities)
+
+
+def _sync_vessel_disabled(
+    registry: er.EntityRegistry,
+    entry: ConfigEntry,
+    coordinator: CrystalVesselCoordinator,
+) -> None:
+    for entity_entry in er.async_entries_for_config_entry(registry, entry.entry_id):
+        if _vessel_id_from_unique_id(entity_entry.unique_id) != coordinator.vessel_id:
+            continue
+        currently_disabled = entity_entry.disabled_by == er.RegistryEntryDisabler.INTEGRATION
+        if coordinator.inactive and not currently_disabled:
+            registry.async_update_entity(
+                entity_entry.entity_id,
+                disabled_by=er.RegistryEntryDisabler.INTEGRATION,
+            )
+        elif not coordinator.inactive and currently_disabled:
+            registry.async_update_entity(
+                entity_entry.entity_id,
+                disabled_by=None,
+            )
 
 
 def _vessel_id_from_unique_id(unique_id: str | None) -> int | None:
@@ -125,12 +125,12 @@ def _device_info(vessel_data: ConnectApiAccountVesselV1) -> DeviceInfo:
     )
 
 
-class CrystalSensorBase(CoordinatorEntity[CrystalDataUpdateCoordinator], SensorEntity):
+class CrystalSensorBase(CoordinatorEntity[CrystalVesselCoordinator], SensorEntity):
     _attr_has_entity_name = True
 
     def __init__(
         self,
-        coordinator: CrystalDataUpdateCoordinator,
+        coordinator: CrystalVesselCoordinator,
         vessel_id: int,
         vessel_data: ConnectApiAccountVesselV1,
     ) -> None:
@@ -142,14 +142,11 @@ class CrystalSensorBase(CoordinatorEntity[CrystalDataUpdateCoordinator], SensorE
 
     @property
     def _vessel(self) -> ConnectApiAccountVesselV1 | None:
-        return self.coordinator.vessel_data.get(self._vessel_id)
+        return self.coordinator.data
 
     @property
     def available(self) -> bool:
-        return (
-            self._vessel_id not in self.coordinator.inactive_vessel_ids
-            and self._vessel is not None
-        )
+        return not self.coordinator.inactive and self.coordinator.data is not None
 
 
 class WaterStatusSensor(CrystalSensorBase):
@@ -275,7 +272,7 @@ class SensorSerialSensor(CrystalSensorBase):
 class ReadingSensor(CrystalSensorBase):
     def __init__(
         self,
-        coordinator: CrystalDataUpdateCoordinator,
+        coordinator: CrystalVesselCoordinator,
         vessel_id: int,
         vessel_data: ConnectApiAccountVesselV1,
         reading_type: str,
@@ -322,10 +319,7 @@ class ReadingSensor(CrystalSensorBase):
 
     @property
     def available(self) -> bool:
-        return (
-            self._vessel_id not in self.coordinator.inactive_vessel_ids
-            and self._reading is not None
-        )
+        return not self.coordinator.inactive and self._reading is not None
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:

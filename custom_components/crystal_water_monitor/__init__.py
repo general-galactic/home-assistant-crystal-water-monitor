@@ -15,7 +15,9 @@ from .const import (
     DOMAIN,
     IS_DEV_BUILD,
 )
-from .coordinator import CrystalDataUpdateCoordinator
+
+CONF_VESSEL_IDS = "vessel_ids"
+from .coordinator import CrystalVesselCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -107,6 +109,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.data[f"{DOMAIN}_static_registered"] = True
         await _async_register_static_paths(hass)
         await _async_register_lovelace_resource(hass)
+
     config = _get_config(entry)
     client = await hass.async_add_executor_job(
         lambda: CrystalApiClient(
@@ -115,14 +118,28 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             locale=hass.config.language,
         )
     )
-    coordinator = CrystalDataUpdateCoordinator(
-        hass=hass,
-        client=client,
-        scan_interval=DEFAULT_SCAN_INTERVAL,
-    )
-    await coordinator.async_config_entry_first_refresh()
 
-    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
+    # Discover vessels once; persist IDs so future loads skip list_vessels.
+    vessel_ids: list[int] = list(config.get(CONF_VESSEL_IDS) or [])
+    if not vessel_ids:
+        vessels = await client.list_vessels()
+        vessel_ids = [v.vessel_id for v in vessels]
+        hass.config_entries.async_update_entry(
+            entry, data={**entry.data, CONF_VESSEL_IDS: vessel_ids}
+        )
+
+    coordinators: dict[int, CrystalVesselCoordinator] = {}
+    for vessel_id in vessel_ids:
+        coordinator = CrystalVesselCoordinator(
+            hass=hass,
+            client=client,
+            vessel_id=vessel_id,
+            scan_interval=DEFAULT_SCAN_INTERVAL,
+        )
+        await coordinator.async_config_entry_first_refresh()
+        coordinators[vessel_id] = coordinator
+
+    hass.data[DOMAIN][entry.entry_id] = {"client": client, "coordinators": coordinators}
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
@@ -137,6 +154,6 @@ async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> Non
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
-        coordinator: CrystalDataUpdateCoordinator = hass.data[DOMAIN].pop(entry.entry_id)
-        await coordinator.client.close()
+        entry_data = hass.data[DOMAIN].pop(entry.entry_id)
+        await entry_data["client"].close()
     return unload_ok
