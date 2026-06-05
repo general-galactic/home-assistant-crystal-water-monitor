@@ -9,11 +9,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "connect-api"))
 from connect_api.api.default_api import DefaultApi
 from connect_api.api_client import ApiClient
 from connect_api.configuration import Configuration
-from connect_api.exceptions import (
-    ApiException,
-    ForbiddenException,
-    UnauthorizedException,
-)
+from connect_api.exceptions import ApiException
 from connect_api.models.connect_api_account_vessel_summary_v1 import (
     ConnectApiAccountVesselSummaryV1,
 )
@@ -75,16 +71,12 @@ class CrystalApiClient:
         try:
             result = await self._api.connect_v1_vessels_get()
             return result.vessels
-        except (UnauthorizedException, ForbiddenException) as err:
-            raise CrystalAuthError(self._server_message(err)) from err
         except ApiException as err:
             raise self._map(err) from err
 
     async def get_vessel(self, vessel_id: int) -> ConnectApiAccountVesselV1:
         try:
             return await self._api.connect_v1_vessels_vessel_id_get(str(vessel_id))
-        except (UnauthorizedException, ForbiddenException) as err:
-            raise CrystalAuthError(self._server_message(err)) from err
         except ApiException as err:
             raise self._map(err) from err
 
@@ -96,6 +88,8 @@ class CrystalApiClient:
 
     def _map(self, err: ApiException) -> CrystalApiError:
         msg = self._server_message(err)
+        if err.status in (401, 403):
+            return CrystalAuthError(msg)
         if err.status == 402:
             return CrystalSubscriptionError(msg)
         if err.status == 404:

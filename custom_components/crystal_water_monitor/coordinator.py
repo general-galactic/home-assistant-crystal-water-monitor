@@ -44,11 +44,10 @@ class CrystalDataUpdateCoordinator(DataUpdateCoordinator[dict[int, ConnectApiAcc
     async def _async_update_data(self) -> dict[int, ConnectApiAccountVesselV1]:
         try:
             vessels = await self.client.list_vessels()
-        except CrystalAuthError as err:
-            raise ConfigEntryError(
-                translation_domain="crystal_water_monitor",
-                translation_key="auth_error",
-            ) from err
+        except CrystalAuthError:
+            _LOGGER.warning("Auth error listing vessels; triggering reauth")
+            self.config_entry.async_start_reauth(self.hass)
+            return self.vessel_data
         except CrystalSubscriptionError as err:
             raise ConfigEntryError(
                 translation_domain="crystal_water_monitor",
@@ -72,6 +71,12 @@ class CrystalDataUpdateCoordinator(DataUpdateCoordinator[dict[int, ConnectApiAcc
                 results[vessel_id] = detail
             except CrystalNotFoundError as err:
                 raise ConfigEntryError(str(err)) from err
+            except CrystalAuthError:
+                _LOGGER.warning("Auth error fetching vessel %s; marking inactive and triggering reauth", vessel_id)
+                inactive.add(vessel_id)
+                if vessel_id in self.vessel_data:
+                    results[vessel_id] = self.vessel_data[vessel_id]
+                self.config_entry.async_start_reauth(self.hass)
             except CrystalSubscriptionError:
                 _LOGGER.debug("Vessel %s has no active subscription; marking inactive", vessel_id)
                 inactive.add(vessel_id)

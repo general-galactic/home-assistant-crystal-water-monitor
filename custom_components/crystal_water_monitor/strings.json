@@ -1,6 +1,10 @@
 {
   "config": {
     "step": {
+      "reauth_confirm": {
+        "title": "Re-authenticate Crystal Water Monitor",
+        "description": "Your Crystal Water Monitor API key is no longer valid. Please enter a new API key to continue."
+      },
       "user": {
         "title": "Connect to Crystal Water Monitor",
         "description": "In order to use this integration you'll need to obtain a Crystal Connect API key. [Follow this link to learn how to get an API key.]({api_key_url})",
@@ -17,7 +21,8 @@
       "unknown": "An unexpected error occurred."
     },
     "abort": {
-      "already_configured": "This API key is already configured."
+      "already_configured": "This API key is already configured.",
+      "reauth_successful": "Re-authentication was successful."
     }
   },
   "options": {
