@@ -9,6 +9,7 @@ jobs:
   release:
     name: Create release
     runs-on: ubuntu-latest
+    needs: [tests, lint, typecheck, hassfest]
     permissions:
       contents: write
     steps:
