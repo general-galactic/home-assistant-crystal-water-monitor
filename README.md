@@ -2,6 +2,8 @@
 
 The official Home Assistant integration from [Crystal Water Monitor](https://www.crystalwatermonitor.com) — bringing real-time pool & hot tub water chemistry directly into your smart home.
 
+[See Features & Screenshots](https://crystalwatermonitor.com/pages/integrations)
+
 ## Prerequisites
 
 - Home Assistant 2026.3 or later
@@ -12,13 +14,13 @@ The official Home Assistant integration from [Crystal Water Monitor](https://www
 
 1. Go to **Settings → Devices & Services → Add Integration**.
 2. Search for **Crystal Water Monitor**.
-3. Enter your **API key** and click **Submit**. HA will validate the key and discover your pools and hot tubs automatically.
+3. Enter your **Crystal Connect API key** and click **Submit**. Home Assistant will validate the API key and discover your pools and hot tubs automatically.
 
-One device and a full set of sensors will be created for each pool or hot tub on your account.
+One entity and a full set of sensors will be created for each pool or hot tub on your account.
 
 ## Dashboard Cards
 
-This integration includes two cards that can be added to Dashboards. Both cards appear in the **Add Card** picker under **Custom cards**.
+This integration includes two custom cards that can be added to Dashboards. Both cards appear in the **Add Card** picker under **Custom cards**.
 
 ### Crystal Disc
 
