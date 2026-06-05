@@ -95,6 +95,13 @@ class CrystalSensorBase(CoordinatorEntity[CrystalDataUpdateCoordinator], SensorE
     def _vessel(self) -> ConnectApiAccountVesselV1 | None:
         return self.coordinator.vessel_data.get(self._vessel_id)
 
+    @property
+    def available(self) -> bool:
+        return (
+            self._vessel_id not in self.coordinator.inactive_vessel_ids
+            and self._vessel is not None
+        )
+
 
 class WaterStatusSensor(CrystalSensorBase):
     _attr_icon = "mdi:water-check"
@@ -265,7 +272,10 @@ class ReadingSensor(CrystalSensorBase):
 
     @property
     def available(self) -> bool:
-        return self._reading is not None
+        return (
+            self._vessel_id not in self.coordinator.inactive_vessel_ids
+            and self._reading is not None
+        )
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:

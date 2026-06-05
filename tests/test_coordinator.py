@@ -115,6 +115,25 @@ async def test_maintenance_returns_cached_data(hass):
 
 
 @pytest.mark.asyncio
+async def test_vessel_subscription_error_skipped(hass):
+    """Vessels with no active subscription are silently skipped, not logged as errors."""
+    summaries = [MagicMock(vessel_id=1), MagicMock(vessel_id=2)]
+    good_vessel = make_vessel(vessel_id=2)
+
+    client = MagicMock()
+    client.list_vessels = AsyncMock(return_value=summaries)
+    client.get_vessel = AsyncMock(side_effect=lambda vid: (
+        (_ for _ in ()).throw(CrystalSubscriptionError("no sub")) if int(vid) == 1 else good_vessel
+    ))
+
+    coord = make_coordinator(hass, client)
+    result = await coord._async_update_data()
+
+    assert 1 not in result
+    assert result[2] is good_vessel
+
+
+@pytest.mark.asyncio
 async def test_generic_api_error_raises_update_failed(hass):
     client = MagicMock()
     client.list_vessels = AsyncMock(side_effect=CrystalApiError("oops"))

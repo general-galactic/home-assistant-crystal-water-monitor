@@ -38,6 +38,7 @@ class CrystalDataUpdateCoordinator(DataUpdateCoordinator[dict[int, ConnectApiAcc
         )
         self.client = client
         self.vessel_data: dict[int, ConnectApiAccountVesselV1] = {}
+        self.inactive_vessel_ids: set[int] = set()
         self.last_synced: datetime | None = None
 
     async def _async_update_data(self) -> dict[int, ConnectApiAccountVesselV1]:
@@ -63,6 +64,7 @@ class CrystalDataUpdateCoordinator(DataUpdateCoordinator[dict[int, ConnectApiAcc
             raise UpdateFailed(f"Crystal API error: {err}") from err
 
         results: dict[int, ConnectApiAccountVesselV1] = {}
+        inactive: set[int] = set()
         for vessel in vessels:
             vessel_id = vessel.vessel_id
             try:
@@ -70,6 +72,11 @@ class CrystalDataUpdateCoordinator(DataUpdateCoordinator[dict[int, ConnectApiAcc
                 results[vessel_id] = detail
             except CrystalNotFoundError as err:
                 raise ConfigEntryError(str(err)) from err
+            except CrystalSubscriptionError:
+                _LOGGER.debug("Vessel %s has no active subscription; marking inactive", vessel_id)
+                inactive.add(vessel_id)
+                if vessel_id in self.vessel_data:
+                    results[vessel_id] = self.vessel_data[vessel_id]
             except CrystalRateLimitError:
                 _LOGGER.warning(
                     "Rate limit hit fetching vessel %s; keeping cached value", vessel_id
@@ -82,7 +89,10 @@ class CrystalDataUpdateCoordinator(DataUpdateCoordinator[dict[int, ConnectApiAcc
                     results[vessel_id] = self.vessel_data[vessel_id]
             except CrystalApiError as err:
                 _LOGGER.error("Error fetching vessel %s: %s", vessel_id, err)
+                if vessel_id in self.vessel_data:
+                    results[vessel_id] = self.vessel_data[vessel_id]
 
         self.vessel_data = results
+        self.inactive_vessel_ids = inactive
         self.last_synced = datetime.now(timezone.utc)
         return results
