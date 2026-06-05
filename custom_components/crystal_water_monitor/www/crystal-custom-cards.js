@@ -766,31 +766,45 @@ class CrystalTempGraphCard extends CrystalGraphCardBase {
 }
 if (!customElements.get("crystal-temp-graph-card")) customElements.define("crystal-temp-graph-card", CrystalTempGraphCard);
 
+function _crystalEntitySuggestion(type, suffix) {
+  return (hass, entityId) => {
+    const entry = hass.entities?.[entityId];
+    if (entry?.platform !== "crystal_water_monitor") return null;
+    if (!entry.entity_id.endsWith(suffix)) return null;
+    return { config: { type: `custom:${type}`, device_id: entry.device_id } };
+  };
+}
+
 window.customCards = window.customCards || [];
 window.customCards.push({
   type: "crystal-disc-card",
   name: "Crystal Disc",
   description: "Water status disc for Crystal Water Monitor",
+  getEntitySuggestion: _crystalEntitySuggestion("crystal-disc-card", "_water_status"),
 });
 window.customCards.push({
   type: "crystal-ph-graph-card",
   name: "Crystal pH Graph",
   description: "24h pH history for a Crystal Water Monitor vessel",
+  getEntitySuggestion: _crystalEntitySuggestion("crystal-ph-graph-card", "_ph"),
 });
 window.customCards.push({
   type: "crystal-orp-graph-card",
   name: "Crystal ORP Graph",
   description: "24h ORP history for a Crystal Water Monitor vessel",
+  getEntitySuggestion: _crystalEntitySuggestion("crystal-orp-graph-card", "_orp"),
 });
 window.customCards.push({
   type: "crystal-temp-graph-card",
   name: "Crystal Temp Graph",
   description: "24h water temperature history for a Crystal Water Monitor vessel",
+  getEntitySuggestion: _crystalEntitySuggestion("crystal-temp-graph-card", "_watertemp"),
 });
 window.customCards.push({
   type: "crystal-actions-card",
   name: "Crystal Actions",
   description: "Recommended actions for a Crystal Water Monitor vessel",
+  getEntitySuggestion: _crystalEntitySuggestion("crystal-actions-card", "_water_status"),
 });
 
 console.info(`%c CRYSTAL-CUSTOM-CARDS %c ${CARD_VERSION} `, "color:white;background:#2d7fc1;font-weight:700", "color:#2d7fc1;background:white;font-weight:700");
