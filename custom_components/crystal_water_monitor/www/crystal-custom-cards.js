@@ -1,5 +1,17 @@
 const CARD_VERSION = "1.0.5";
 
+const BADGE_OPTIONS = [
+  { key: "ph",           label: "pH",          suffix: "",     entitySuffix: "_ph" },
+  { key: "orp",          label: "ORP",         suffix: " mV",  entitySuffix: "_orp" },
+  { key: "waterTemp",    label: "Temp",        suffix: "°F",   entitySuffix: "_water_temperature" },
+  { key: "freeChlorine", label: "Cl₂",         suffix: " ppm", entitySuffix: "_free_chlorine" },
+  { key: "totalAlkalinity", label: "TA",       suffix: " ppm", entitySuffix: "_total_alkalinity" },
+  { key: "totalHardness",   label: "TH",       suffix: " ppm", entitySuffix: "_total_hardness" },
+  { key: "cyanuricAcid",    label: "CYA",      suffix: " ppm", entitySuffix: "_cyanuric_acid" },
+  { key: "salt",            label: "Salt",     suffix: " ppm", entitySuffix: "_salt" },
+  { key: "lsi",             label: "LSI",      suffix: "",     entitySuffix: "_lsi" },
+];
+
 const TRANSLATIONS = {
   en: {
     "editor.pool_label": "Pool or Hot Tub",
@@ -21,6 +33,11 @@ const TRANSLATIONS = {
     "card.days_ago_other": "{n} days ago",
     "card.years_ago_one": "1 year ago",
     "card.years_ago_other": "{n} years ago",
+    "editor.badges": "Badges",
+    "editor.badge_position": "Badge position",
+    "editor.badge_position_left": "Left",
+    "editor.badge_position_right": "Right",
+    "editor.badge_position_bottom": "Bottom",
   },
   es: {
     "editor.pool_label": "Piscina o bañera de hidromasaje",
@@ -92,20 +109,52 @@ class CrystalDiscCardEditor extends HTMLElement {
     this._render();
   }
 
+  _dispatch(patch) {
+    this.dispatchEvent(new CustomEvent("config-changed", {
+      detail: { config: { ...this._config, ...patch } },
+      bubbles: true,
+      composed: true,
+    }));
+  }
+
   _render() {
     if (!this.shadowRoot) this.attachShadow({ mode: "open" });
+    const badges = this._config?.badges ?? ["ph", "orp", "waterTemp"];
+    const badgePos = this._config?.badge_position ?? "right";
+
     this.shadowRoot.innerHTML = `
       <style>
         .row { padding: 8px 0; }
         .checkbox-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; font-size: 14px; }
         .checkbox-row label { cursor: pointer; }
+        .section-label { font-size: 12px; font-weight: 600; color: var(--secondary-text-color); text-transform: uppercase; letter-spacing: 0.05em; padding: 12px 0 4px; }
+        .badge-grid { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 0 8px; }
+        .badge-chip { display: flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 16px; border: 1px solid var(--divider-color); font-size: 13px; cursor: pointer; user-select: none; }
+        .badge-chip.selected { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+        .position-row { display: flex; gap: 8px; padding: 4px 0 8px; }
+        .pos-btn { flex: 1; padding: 6px; border-radius: 8px; border: 1px solid var(--divider-color); font-size: 13px; cursor: pointer; text-align: center; background: none; color: var(--primary-text-color); }
+        .pos-btn.selected { background: var(--primary-color); color: white; border-color: var(--primary-color); }
       </style>
       <div class="row">
         <ha-selector label="${t(this._hass, "editor.pool_label")}"></ha-selector>
       </div>
-      <div class="checkbox-row" style="margin-top:8px;">
+      <div class="checkbox-row">
         <input type="checkbox" id="transparent" ${this._config?.transparent ? "checked" : ""} />
         <label for="transparent">${t(this._hass, "editor.transparent")}</label>
+      </div>
+      <div class="section-label">${t(this._hass, "editor.badges")}</div>
+      <div class="badge-grid">
+        ${BADGE_OPTIONS.map(b => `
+          <div class="badge-chip ${badges.includes(b.key) ? "selected" : ""}" data-badge="${b.key}">${b.label}</div>
+        `).join("")}
+      </div>
+      <div class="section-label">${t(this._hass, "editor.badge_position")}</div>
+      <div class="position-row">
+        ${["left","right","bottom"].map(p => `
+          <button class="pos-btn ${badgePos === p ? "selected" : ""}" data-pos="${p}">
+            ${t(this._hass, "editor.badge_position_" + p)}
+          </button>
+        `).join("")}
       </div>
     `;
 
@@ -114,21 +163,23 @@ class CrystalDiscCardEditor extends HTMLElement {
     selector.selector = { device: { integration: "crystal_water_monitor" } };
     selector.value = this._config?.device_id || "";
     selector.label = t(this._hass, "editor.pool_label");
+    selector.addEventListener("value-changed", (e) => this._dispatch({ device_id: e.detail.value }));
 
-    selector.addEventListener("value-changed", (e) => {
-      this.dispatchEvent(new CustomEvent("config-changed", {
-        detail: { config: { ...this._config, device_id: e.detail.value } },
-        bubbles: true,
-        composed: true,
-      }));
+    this.shadowRoot.querySelector("#transparent").addEventListener("change", (e) =>
+      this._dispatch({ transparent: e.target.checked })
+    );
+
+    this.shadowRoot.querySelectorAll(".badge-chip").forEach(chip => {
+      chip.addEventListener("click", () => {
+        const key = chip.dataset.badge;
+        const current = this._config?.badges ?? ["ph", "orp", "waterTemp"];
+        const next = current.includes(key) ? current.filter(k => k !== key) : [...current, key];
+        this._dispatch({ badges: next });
+      });
     });
 
-    this.shadowRoot.querySelector("#transparent").addEventListener("change", (e) => {
-      this.dispatchEvent(new CustomEvent("config-changed", {
-        detail: { config: { ...this._config, transparent: e.target.checked } },
-        bubbles: true,
-        composed: true,
-      }));
+    this.shadowRoot.querySelectorAll(".pos-btn").forEach(btn => {
+      btn.addEventListener("click", () => this._dispatch({ badge_position: btn.dataset.pos }));
     });
   }
 }
@@ -143,7 +194,7 @@ class CrystalDiscCard extends HTMLElement {
   }
 
   static getStubConfig() {
-    return { device_id: "", transparent: false };
+    return { device_id: "", transparent: false, badges: ["ph", "orp", "waterTemp"], badge_position: "right" };
   }
 
   set hass(hass) {
@@ -198,6 +249,54 @@ class CrystalDiscCard extends HTMLElement {
     });
   }
 
+  _findEntityBySuffix(deviceId, suffix) {
+    return Object.values(this._hass.states).find((state) => {
+      const entityDeviceId = this._hass.entities?.[state.entity_id]?.device_id;
+      return entityDeviceId === deviceId && state.entity_id.endsWith(suffix);
+    });
+  }
+
+  _renderBadges(deviceId, badgeKeys, position) {
+    if (!badgeKeys?.length) return { html: "", position };
+    const pos = position ?? "right";
+
+    const items = badgeKeys.map(key => {
+      const def = BADGE_OPTIONS.find(b => b.key === key);
+      if (!def) return null;
+      const entity = this._findEntityBySuffix(deviceId, def.entitySuffix);
+      const value = entity ? parseFloat(entity.state) : null;
+      const display = value != null ? (Number.isInteger(value) ? value : value.toFixed(1)) : "—";
+      // colour the badge label by status attribute
+      const status = entity?.attributes?.status ?? "ok";
+      const statusColor = { really_low: "#da1f1f", low: "#f67d00", high: "#f67d00", really_high: "#da1f1f" }[status];
+      const bg = statusColor ?? "var(--secondary-background-color)";
+      const textColor = statusColor ? "white" : "var(--primary-text-color)";
+      const labelColor = statusColor ? "white" : "#2166aa";
+      return `
+        <div style="
+          background: ${bg};
+          border-radius: 999px;
+          border: 1px solid var(--divider-color);
+          padding: 6px 14px;
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          gap: 8px;
+          white-space: nowrap;
+        ">
+          <span style="font-size:13px;font-weight:600;color:${labelColor};">${def.label}</span>
+          <span style="font-size:13px;color:${textColor};">${display}${def.suffix && value != null ? `<span style="font-size:11px;"> ${def.suffix}</span>` : ""}</span>
+        </div>`;
+    }).filter(Boolean).join("");
+
+    const isVertical = pos === "left" || pos === "right";
+    const containerStyle = isVertical
+      ? "display:flex;flex-direction:column;gap:6px;justify-content:center;"
+      : "display:flex;flex-direction:row;gap:6px;justify-content:center;padding-top:8px;";
+
+    return { html: `<div style="${containerStyle}">${items}</div>`, position: pos };
+  }
+
   _discUrl(color) {
     const name = ["blue", "orange", "red", "gray"].includes(color) ? color : "blue";
     return `/crystal_water_monitor/disc-${name}.svg`;
@@ -228,19 +327,17 @@ class CrystalDiscCard extends HTMLElement {
     const appUrl = isMobileApp && vesselId ? `https://cwmu.us/app/vessels/${vesselId}` : null;
 
     const lastUpdated = this._relativeTime(disc.lastUpdatedDate);
-    
+    const deviceId = this._config?.device_id;
+    const badgeKeys = this._config?.badges ?? ["ph", "orp", "waterTemp"];
+    const badgePos = this._config?.badge_position ?? "right";
+    const { html: badgeHtml } = this._renderBadges(deviceId, badgeKeys, badgePos);
+
     const tempC = disc.tempC;
     const tempF = tempC != null ? ((tempC * 9) / 5 + 32).toFixed(0) : null;
     const temp = tempF != null ? `<div style="position:relative;display:inline-block;"><span style="font-size:51px;font-weight:500;line-height:1;">${tempF}</span><span style="position:absolute;top:4px;left:100%;font-size:18px;font-weight:300;line-height:1;margin-left:2px;">°F</span></div>` : "";
 
-    const inner = `
-      <div style="
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 24px;
-      ">
-        <div style="position: relative; width: 240px; height: 240px;${appUrl ? "cursor:pointer;" : ""}" ${appUrl ? `data-app-url="${appUrl}"` : ""}>
+    const discEl = `
+        <div style="position: relative; width: 240px; height: 240px; flex-shrink:0;${appUrl ? "cursor:pointer;" : ""}" ${appUrl ? `data-app-url="${appUrl}"` : ""}>
           <img src="${discUrl}" style="width: 100%; height: 100%; pointer-events:none;" />
           <div style="
             position: absolute;
@@ -261,8 +358,15 @@ class CrystalDiscCard extends HTMLElement {
             </div>
             <div id="crystal-last-updated" style="font-size: 13px; opacity: 0.85;">${lastUpdated}</div>
           </div>
-        </div>
+        </div>`;
 
+    const isRow = badgePos === "left" || badgePos === "right";
+    const inner = `
+      <div style="display:flex;flex-direction:${isRow ? "row" : "column"};justify-content:center;align-items:center;padding:24px;gap:12px;">
+        ${badgePos === "left" ? badgeHtml : ""}
+        ${discEl}
+        ${badgePos === "right" ? badgeHtml : ""}
+        ${badgePos === "bottom" ? badgeHtml : ""}
       </div>
     `;
 
