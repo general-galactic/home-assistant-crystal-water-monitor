@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches: [main]
-    tags: ["v*"]
+    tags: ["v*"]  # triggers CI on release tags so workflow_run can gate the release job
   pull_request:
     branches: [main]
 
