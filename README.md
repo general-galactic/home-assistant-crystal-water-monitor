@@ -8,7 +8,7 @@ The official Home Assistant integration from [Crystal Water Monitor](https://www
 
 - Home Assistant 2026.3 or later
 - A Crystal Water Monitor installed in a pool, hot tub, or swim spa with an active subscription.
-- A Crystal Connect API key ([get one here](https://www.crystalwatermonitor.com/api-key))
+- A Crystal Connect API key ([get one here](https://crystalwatermonitor.com/pages/crystal-connect-api))
 
 ## Configuration
 

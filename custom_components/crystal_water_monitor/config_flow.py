@@ -16,7 +16,7 @@ from .const import (
     IS_DEV_BUILD,
 )
 
-API_KEY_HELP_URL = "https://www.crystalwatermonitor.com/api-key"
+API_KEY_HELP_URL = "https://crystalwatermonitor.com/pages/crystal-connect-api"
 
 
 def _user_schema(show_env: bool) -> vol.Schema:

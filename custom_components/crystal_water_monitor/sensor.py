@@ -136,9 +136,14 @@ class CrystalSensorBase(CoordinatorEntity[CrystalVesselCoordinator], SensorEntit
     ) -> None:
         super().__init__(coordinator)
         self._vessel_id = vessel_id
-        self._attr_device_info = _device_info(vessel_data)
+        self._initial_vessel_data = vessel_data
         if not self.__class__.__dict__.get("_attr_icon"):
             self._attr_icon = _vessel_icon(vessel_data)
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        vessel = self.coordinator.data or self._initial_vessel_data
+        return _device_info(vessel)
 
     @property
     def _vessel(self) -> ConnectApiAccountVesselV1 | None:

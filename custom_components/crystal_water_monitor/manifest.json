@@ -11,7 +11,7 @@
   "dependencies": [
     "http"
   ],
-  "documentation": "https://www.crystalwatermonitor.com",
+  "documentation": "https://crystalwatermonitor.com/pages/integrations",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/generalgalactic/home-assistant-plugin/issues",
   "homeassistant": "2026.6.0",
