@@ -95,3 +95,6 @@ If you have a local Home Assistant core checkout, run:
 ```bash
 python -m script.hassfest --integration-path custom_components/crystal_water_monitor
 ```
+
+## Creating an HACS Install Badge
+Visit [https://my.home-assistant.io/create-link/?redirect=hacs_repository](https://my.home-assistant.io/create-link/?redirect=hacs_repository)
