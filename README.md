@@ -38,6 +38,8 @@ Thanks to Max Herrera for getting us started on this project and helping us get 
 
 ## Legal
 
+[Connect API Terms of Service](https://crystalwatermonitor.com/policies/agreements)
+
 [Terms of Service](https://crystalwatermonitor.com/policies/terms-of-service)
 
 [Privacy Policy](https://crystalwatermonitor.com/policies/privacy-policy)
