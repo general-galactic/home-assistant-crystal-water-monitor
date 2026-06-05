@@ -1,21 +1,21 @@
 """Tests for CrystalVesselCoordinator."""
 from __future__ import annotations
 
-import pytest
 from datetime import timedelta
 from unittest.mock import AsyncMock, MagicMock
 
+import pytest
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
-from custom_components.crystal_water_monitor.coordinator import CrystalVesselCoordinator
 from custom_components.crystal_water_monitor.api import (
-    CrystalAuthError,
-    CrystalSubscriptionError,
-    CrystalRateLimitError,
-    CrystalMaintenanceError,
     CrystalApiError,
+    CrystalAuthError,
+    CrystalMaintenanceError,
     CrystalNotFoundError,
+    CrystalRateLimitError,
+    CrystalSubscriptionError,
 )
+from custom_components.crystal_water_monitor.coordinator import CrystalVesselCoordinator
 
 from .conftest import make_vessel
 

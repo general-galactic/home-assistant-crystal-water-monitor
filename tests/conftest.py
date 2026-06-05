@@ -1,8 +1,8 @@
 """Shared fixtures for Crystal Water Monitor tests."""
 from __future__ import annotations
 
-import sys
 import os
+import sys
 
 # Ensure the generated connect-api package is importable
 sys.path.insert(
@@ -16,17 +16,18 @@ sys.path.insert(
     ),
 )
 
-import pytest
 from datetime import datetime, timezone
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
+from connect_api.models.connect_api_account_vessel_disc_v1 import (
+    ConnectApiAccountVesselDiscV1,
+)
 from connect_api.models.connect_api_account_vessel_v1 import ConnectApiAccountVesselV1
-from connect_api.models.connect_api_account_vessel_disc_v1 import ConnectApiAccountVesselDiscV1
-from connect_api.models.connect_api_readings_v1 import ConnectAPIReadingsV1
 from connect_api.models.connect_api_reading_v1 import ConnectAPIReadingV1
-from connect_api.models.water_status_color import WaterStatusColor
-from connect_api.models.reading_statuses import ReadingStatuses
+from connect_api.models.connect_api_readings_v1 import ConnectAPIReadingsV1
 from connect_api.models.reading_sources_v1 import ReadingSourcesV1
+from connect_api.models.reading_statuses import ReadingStatuses
+from connect_api.models.water_status_color import WaterStatusColor
 
 
 def make_reading(

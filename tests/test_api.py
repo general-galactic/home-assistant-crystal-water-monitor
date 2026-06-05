@@ -1,15 +1,16 @@
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
+from connect_api.exceptions import ApiException
 
 from custom_components.crystal_water_monitor.api import (
     CrystalApiClient,
     CrystalAuthError,
-    CrystalSubscriptionError,
+    CrystalMaintenanceError,
     CrystalNotFoundError,
     CrystalRateLimitError,
-    CrystalMaintenanceError,
+    CrystalSubscriptionError,
 )
-from connect_api.exceptions import ApiException
 
 
 def make_client():

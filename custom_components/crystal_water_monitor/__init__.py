@@ -15,9 +15,9 @@ from .const import (
     DOMAIN,
     IS_DEV_BUILD,
 )
+from .coordinator import CrystalVesselCoordinator
 
 CONF_VESSEL_IDS = "vessel_ids"
-from .coordinator import CrystalVesselCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 

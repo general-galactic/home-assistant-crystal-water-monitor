@@ -1,25 +1,25 @@
 """Tests for Crystal Water Monitor sensor entities."""
 from __future__ import annotations
 
-import pytest
 from datetime import datetime, timezone
 from unittest.mock import MagicMock
 
-from connect_api.models.water_status_color import WaterStatusColor
-from connect_api.models.reading_statuses import ReadingStatuses
+import pytest
 from connect_api.models.reading_sources_v1 import ReadingSourcesV1
+from connect_api.models.reading_statuses import ReadingStatuses
+from connect_api.models.water_status_color import WaterStatusColor
 
 from custom_components.crystal_water_monitor.sensor import (
-    WaterStatusSensor,
     ActionsPendingSensor,
-    LastUpdatedSensor,
     LastSyncedSensor,
+    LastUpdatedSensor,
     MonitorSerialSensor,
-    SensorSerialSensor,
     ReadingSensor,
+    SensorSerialSensor,
+    WaterStatusSensor,
 )
 
-from .conftest import make_vessel, make_reading
+from .conftest import make_reading, make_vessel
 
 
 def make_coordinator(vessel=None, inactive=False):
