@@ -46,9 +46,6 @@
   "exceptions": {
     "auth_error": {
       "message": "Authentication failed. Go to Settings → Devices & Services → Crystal Water Monitor and re-enter your API key."
-    },
-    "subscription_error": {
-      "message": "Your Crystal Water Monitor subscription is no longer active. Visit crystalwatermonitor.com to renew, then reload the integration."
     }
   }
 }

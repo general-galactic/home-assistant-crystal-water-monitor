@@ -4,7 +4,6 @@ import logging
 from datetime import datetime, timedelta, timezone
 
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryError
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import (
@@ -48,11 +47,10 @@ class CrystalDataUpdateCoordinator(DataUpdateCoordinator[dict[int, ConnectApiAcc
             _LOGGER.warning("Auth error listing vessels; triggering reauth")
             self.config_entry.async_start_reauth(self.hass)
             return self.vessel_data
-        except CrystalSubscriptionError as err:
-            raise ConfigEntryError(
-                translation_domain="crystal_water_monitor",
-                translation_key="subscription_error",
-            ) from err
+        except CrystalSubscriptionError:
+            _LOGGER.warning("Subscription error listing vessels; triggering reauth")
+            self.config_entry.async_start_reauth(self.hass)
+            return self.vessel_data
         except CrystalRateLimitError:
             _LOGGER.warning("Crystal API rate limit hit; using cached data")
             return self.vessel_data
@@ -69,14 +67,15 @@ class CrystalDataUpdateCoordinator(DataUpdateCoordinator[dict[int, ConnectApiAcc
             try:
                 detail = await self.client.get_vessel(vessel_id)
                 results[vessel_id] = detail
-            except CrystalNotFoundError as err:
-                raise ConfigEntryError(str(err)) from err
-            except CrystalAuthError:
-                _LOGGER.warning("Auth error fetching vessel %s; marking inactive and triggering reauth", vessel_id)
+            except CrystalNotFoundError:
+                _LOGGER.warning("Vessel %s not found; marking inactive", vessel_id)
                 inactive.add(vessel_id)
                 if vessel_id in self.vessel_data:
                     results[vessel_id] = self.vessel_data[vessel_id]
+            except CrystalAuthError:
+                _LOGGER.warning("Auth error fetching vessel %s; triggering reauth", vessel_id)
                 self.config_entry.async_start_reauth(self.hass)
+                return self.vessel_data
             except CrystalSubscriptionError:
                 _LOGGER.debug("Vessel %s has no active subscription; marking inactive", vessel_id)
                 inactive.add(vessel_id)

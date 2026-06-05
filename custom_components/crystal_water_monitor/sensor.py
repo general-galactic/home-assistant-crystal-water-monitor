@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
+from homeassistant.helpers import entity_registry as er
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
@@ -48,6 +49,8 @@ async def async_setup_entry(
     coordinator: CrystalDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
     known_vessel_ids: set[int] = set()
 
+    registry = er.async_get(hass)
+
     def _add_new_vessels() -> None:
         new_entities: list[SensorEntity] = []
         for vessel_id, vessel_data in coordinator.vessel_data.items():
@@ -56,9 +59,37 @@ async def async_setup_entry(
                 new_entities.extend(_entities_for_vessel(coordinator, vessel_id, vessel_data))
         if new_entities:
             async_add_entities(new_entities)
+        _sync_disabled_vessels()
+
+    def _sync_disabled_vessels() -> None:
+        for entity_entry in er.async_entries_for_config_entry(registry, entry.entry_id):
+            vessel_id = _vessel_id_from_unique_id(entity_entry.unique_id)
+            if vessel_id is None:
+                continue
+            should_disable = vessel_id in coordinator.inactive_vessel_ids
+            currently_disabled = entity_entry.disabled_by == er.RegistryEntryDisabler.INTEGRATION
+            if should_disable and not currently_disabled:
+                registry.async_update_entity(
+                    entity_entry.entity_id,
+                    disabled_by=er.RegistryEntryDisabler.INTEGRATION,
+                )
+            elif not should_disable and currently_disabled:
+                registry.async_update_entity(
+                    entity_entry.entity_id,
+                    disabled_by=None,
+                )
 
     _add_new_vessels()
     entry.async_on_unload(coordinator.async_add_listener(lambda: _add_new_vessels()))
+
+
+def _vessel_id_from_unique_id(unique_id: str | None) -> int | None:
+    if not unique_id:
+        return None
+    try:
+        return int(unique_id.split("_")[0])
+    except (ValueError, IndexError):
+        return None
 
 
 def _last_updated(vessel: ConnectApiAccountVesselV1) -> str | None:
