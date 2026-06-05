@@ -131,7 +131,7 @@ Each reading in the `readings` object has this shape:
 `disc.waterStatusColor` is an overall water health indicator:
 - `blue` — water is balanced
 - `orange` — water needs attention
-- `red` — water is unsafe
+- `red` — water needs immediate attention
 - `gray` — unknown / no data
 
 ## Reading Types
@@ -151,7 +151,7 @@ The following reading types may be present in the `readings` object (all optiona
 
 ## Suggested Home Assistant Entities Per Vessel
 
-- **Sensor: Water Status** — `disc.waterStatusColor` mapped to a state (`Balanced`, `Needs Attention`, `Unsafe`, `Unknown`)
+- **Sensor: Water Status** — `disc.waterStatusColor` mapped to a state (`Balanced`, `Needs Attention`, `Needs Immediate Attention`, `Unknown`)
 - **Sensor: pH** — `readings.ph.value`, unit `pH`, attributes: status, range, date
 - **Sensor: ORP** — `readings.orp.value`, unit `mV`, attributes: status, range, date
 - **Sensor: Water Temperature** — `readings.waterTemp.value` (°C or °F), attributes: status, date

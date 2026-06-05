@@ -38,7 +38,7 @@ def make_coordinator(vessel=None, inactive=False):
 @pytest.mark.parametrize("color,expected", [
     (WaterStatusColor.BLUE, "Balanced"),
     (WaterStatusColor.ORANGE, "Needs Attention"),
-    (WaterStatusColor.RED, "Unsafe"),
+    (WaterStatusColor.RED, "Needs Immediate Attention"),
     (WaterStatusColor.GRAY, "Unknown"),
 ])
 def test_water_status_sensor_value(color, expected):

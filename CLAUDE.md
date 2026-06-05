@@ -14,7 +14,7 @@ The integration connects to the **Crystal Connect API**, a REST proxy in front o
 
 ### Water status color
 
-`disc.waterStatusColor`: `blue` = balanced, `orange` = needs attention, `red` = unsafe, `gray` = unknown
+`disc.waterStatusColor`: `blue` = balanced, `orange` = needs attention, `red` = needs immediate attention, `gray` = unknown
 
 ## Integration Architecture
 
@@ -31,7 +31,7 @@ Standard HA custom component layout under `custom_components/crystal_water_monit
 
 | Entity | Source field | Unit |
 |--------|-------------|------|
-| Water Status | `disc.waterStatusColor` | — (Balanced / Needs Attention / Unsafe / Unknown) |
+| Water Status | `disc.waterStatusColor` | — (Balanced / Needs Attention / Needs Immediate Attention / Unknown) |
 | pH | `readings.ph.value` | pH |
 | ORP | `readings.orp.value` | mV |
 | Water Temperature | `readings.waterTemp.value` | °C or °F |

@@ -17,7 +17,7 @@ BASE_URLS = {
 WATER_STATUS_MAP = {
     "blue": "Balanced",
     "orange": "Needs Attention",
-    "red": "Unsafe",
+    "red": "Needs Immediate Attention",
     "gray": "Unknown",
 }
 
