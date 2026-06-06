@@ -46,7 +46,7 @@ const TRANSLATIONS = {
     "badge.ph": "pH",
     "badge.orp": "ORP",
     "badge.temp": "Temp",
-    "badge.chlorine": "Cl₂",
+    "badge.chlorine": "FC",
     "badge.alkalinity": "TA",
     "badge.hardness": "TH",
     "badge.cya": "CYA",
@@ -86,7 +86,7 @@ const TRANSLATIONS = {
     "badge.ph": "pH",
     "badge.orp": "ORP",
     "badge.temp": "Temp",
-    "badge.chlorine": "Cl₂",
+    "badge.chlorine": "FC",
     "badge.alkalinity": "TA",
     "badge.hardness": "TH",
     "badge.cya": "CYA",
@@ -126,7 +126,7 @@ const TRANSLATIONS = {
     "badge.ph": "pH",
     "badge.orp": "ORP",
     "badge.temp": "Temp",
-    "badge.chlorine": "Cl₂",
+    "badge.chlorine": "FC",
     "badge.alkalinity": "TA",
     "badge.hardness": "TH",
     "badge.cya": "CYA",
@@ -316,7 +316,8 @@ class CrystalDiscCard extends HTMLElement {
       const def = BADGE_OPTIONS.find(b => b.key === key);
       if (!def) return null;
       const entity = this._findEntityBySuffix(deviceId, def.entitySuffix);
-      const value = entity ? parseFloat(entity.state) : null;
+      const rawValue = entity ? parseFloat(entity.state) : NaN;
+      const value = Number.isFinite(rawValue) ? rawValue : null;
       const display = value != null ? (Number.isInteger(value) ? value : value.toFixed(1)) : "—";
       // colour the badge label by status attribute
       const status = entity?.attributes?.status ?? "ok";
