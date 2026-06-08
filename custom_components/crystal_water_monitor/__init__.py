@@ -6,8 +6,9 @@ from pathlib import Path
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 
-from .api import CrystalApiClient
+from .api import CrystalApiClient, CrystalApiError, CrystalAuthError
 from .const import (
     CONF_API_KEY,
     CONF_ENVIRONMENT,
@@ -123,7 +124,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Discover vessels once; persist IDs so future loads skip list_vessels.
     vessel_ids: list[int] = list(config.get(CONF_VESSEL_IDS) or [])
     if not vessel_ids:
-        vessels = await client.list_vessels()
+        try:
+            vessels = await client.list_vessels()
+        except CrystalAuthError as err:
+            await client.close()
+            raise ConfigEntryAuthFailed("Crystal API rejected the configured API key") from err
+        except CrystalApiError as err:
+            await client.close()
+            raise ConfigEntryNotReady(f"Error communicating with Crystal API: {err}") from err
         vessel_ids = [v.vessel_id for v in vessels]
         hass.config_entries.async_update_entry(
             entry, data={**entry.data, CONF_VESSEL_IDS: vessel_ids}
@@ -149,7 +157,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Reload the entry when options are updated."""
-    await hass.config_entries.async_reload(entry.entry_id)
+    hass.config_entries.async_schedule_reload(entry.entry_id)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

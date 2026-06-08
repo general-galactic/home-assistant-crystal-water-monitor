@@ -95,9 +95,25 @@ class CrystalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: igno
         return await self.async_step_reauth_confirm()
 
     async def async_step_reauth_confirm(self, user_input=None):
+        errors: dict[str, str] = {}
+        reauth_entry = self._get_reauth_entry()
+
         if user_input is not None:
-            return await self.async_step_user()
-        return self.async_show_form(step_id="reauth_confirm")
+            environment = user_input.get(CONF_ENVIRONMENT, reauth_entry.data.get(CONF_ENVIRONMENT, "production"))
+            error = await _validate_api_key(self.hass, user_input[CONF_API_KEY], environment)
+            if error:
+                errors["base"] = error
+            else:
+                data = dict(user_input)
+                data.setdefault(CONF_ENVIRONMENT, environment)
+                return self.async_update_reload_and_abort(reauth_entry, data=data, options={})
+
+        return self.async_show_form(
+            step_id="reauth_confirm",
+            data_schema=_options_schema(reauth_entry.data, IS_DEV_BUILD),
+            description_placeholders={"api_key_url": API_KEY_HELP_URL},
+            errors=errors,
+        )
 
     @staticmethod
     def async_get_options_flow(config_entry):

@@ -8,6 +8,14 @@
           "api_key": "Clé API",
           "environment": "Environnement"
         }
+      },
+      "reauth_confirm": {
+        "title": "Ré-authentifier Crystal Water Monitor",
+        "description": "Votre clé API Crystal Water Monitor n'est plus valide. Veuillez saisir une nouvelle clé API pour continuer. [Suivez ce lien pour savoir comment obtenir une clé API.]({api_key_url})",
+        "data": {
+          "api_key": "Clé API",
+          "environment": "Environnement"
+        }
       }
     },
     "error": {
@@ -17,7 +25,8 @@
       "unknown": "Une erreur inattendue s'est produite."
     },
     "abort": {
-      "already_configured": "Cette clé API est déjà configurée."
+      "already_configured": "Cette clé API est déjà configurée.",
+      "reauth_successful": "La ré-authentification a réussi."
     }
   },
   "options": {

@@ -8,6 +8,14 @@
           "api_key": "Clave de API",
           "environment": "Entorno"
         }
+      },
+      "reauth_confirm": {
+        "title": "Reautenticar Crystal Water Monitor",
+        "description": "Su clave de API de Crystal Water Monitor ya no es válida. Ingrese una nueva clave de API para continuar. [Siga este enlace para aprender cómo obtener una clave de API.]({api_key_url})",
+        "data": {
+          "api_key": "Clave de API",
+          "environment": "Entorno"
+        }
       }
     },
     "error": {
@@ -17,7 +25,8 @@
       "unknown": "Ocurrió un error inesperado."
     },
     "abort": {
-      "already_configured": "Esta clave de API ya está configurada."
+      "already_configured": "Esta clave de API ya está configurada.",
+      "reauth_successful": "La reautenticación fue exitosa."
     }
   },
   "options": {

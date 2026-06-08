@@ -32,6 +32,8 @@ def _entities_for_vessel(
         ActionsPendingSensor(coordinator, vessel_id, vessel_data),
         LastUpdatedSensor(coordinator, vessel_id, vessel_data),
         LastSyncedSensor(coordinator, vessel_id, vessel_data),
+        PollingSensor(coordinator, vessel_id, vessel_data),
+        VesselIdSensor(coordinator, vessel_id, vessel_data),
         MonitorSerialSensor(coordinator, vessel_id, vessel_data),
         SensorSerialSensor(coordinator, vessel_id, vessel_data),
     ]
@@ -124,7 +126,7 @@ def _device_info(vessel_data: ConnectApiAccountVesselV1) -> DeviceInfo:
         manufacturer="Crystal Water Monitor",
         model=vessel_data.type,
         serial_number=vessel_data.monitor_serial_number,
-        configuration_url="https://www.crystalwatermonitor.com",
+        configuration_url="https://crystalwatermonitor.com/pages/integrations",
     )
 
 
@@ -245,6 +247,42 @@ class LastSyncedSensor(CrystalSensorBase):
     @property
     def native_value(self) -> datetime | None:
         return self.coordinator.last_synced
+
+
+class PollingSensor(CrystalSensorBase):
+    _attr_icon = "mdi:sync"
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator, vessel_id, vessel_data: ConnectApiAccountVesselV1):
+        super().__init__(coordinator, vessel_id, vessel_data)
+        self._attr_unique_id = f"{vessel_id}_polling"
+        self._attr_name = "Polling"
+
+    @property
+    def native_value(self) -> str:
+        return "Inactive" if self.coordinator.inactive else "Active"
+
+    @property
+    def available(self) -> bool:
+        return self.coordinator.data is not None
+
+
+class VesselIdSensor(CrystalSensorBase):
+    _attr_icon = "mdi:identifier"
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator, vessel_id, vessel_data: ConnectApiAccountVesselV1):
+        super().__init__(coordinator, vessel_id, vessel_data)
+        self._attr_unique_id = f"{vessel_id}_vessel_id"
+        self._attr_name = "Vessel ID"
+
+    @property
+    def native_value(self) -> int:
+        return self._vessel_id
+
+    @property
+    def available(self) -> bool:
+        return True
 
 
 class MonitorSerialSensor(CrystalSensorBase):
