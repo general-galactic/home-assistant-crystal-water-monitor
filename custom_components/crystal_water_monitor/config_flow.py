@@ -104,7 +104,7 @@ class CrystalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: igno
             if error:
                 errors["base"] = error
             else:
-                data = dict(user_input)
+                data = {**reauth_entry.data, **user_input}
                 data.setdefault(CONF_ENVIRONMENT, environment)
                 return self.async_update_reload_and_abort(reauth_entry, data=data, options={})
 
@@ -123,7 +123,7 @@ class CrystalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: igno
 class CrystalOptionsFlow(config_entries.OptionsFlow):
     async def async_step_init(self, user_input=None):
         errors: dict[str, str] = {}
-        current = {**self.config_entry.data, **self.config_entry.options}
+        current = self.config_entry.data
 
         if user_input is not None:
             environment = user_input.get(CONF_ENVIRONMENT, current.get(CONF_ENVIRONMENT, "production"))
@@ -131,10 +131,10 @@ class CrystalOptionsFlow(config_entries.OptionsFlow):
             if error:
                 errors["base"] = error
             else:
-                options = dict(user_input)
-                options.setdefault(CONF_ENVIRONMENT, current.get(CONF_ENVIRONMENT, "production"))
-
-                return self.async_create_entry(title="", data=options)
+                data = {**current, **user_input}
+                data.setdefault(CONF_ENVIRONMENT, environment)
+                self.hass.config_entries.async_update_entry(self.config_entry, data=data)
+                return self.async_create_entry(title="", data={})
 
         return self.async_show_form(
             step_id="init",

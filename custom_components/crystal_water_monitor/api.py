@@ -59,6 +59,8 @@ class CrystalSubscriptionError(CrystalApiError):
 
 class CrystalApiClient:
     def __init__(self, api_key: str, environment: str, locale: str = "en") -> None:
+        self.key_prefix = api_key[:8]
+        self.environment = environment
         config = Configuration(host=BASE_URLS[environment], api_key={"ApiKeyAuth": api_key})
         self._client = ApiClient(configuration=config)
         self._client.default_headers["Accept-Language"] = locale

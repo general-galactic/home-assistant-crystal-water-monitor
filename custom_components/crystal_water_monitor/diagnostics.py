@@ -21,6 +21,7 @@ async def async_get_config_entry_diagnostics(hass: HomeAssistant, entry: ConfigE
         "vessels": {
             str(vessel_id): {
                 "inactive": coordinator.inactive,
+                "auth_failed": coordinator.auth_failed,
                 "last_synced": coordinator.last_synced.isoformat() if coordinator.last_synced else None,
                 "data": coordinator.data.to_dict() if coordinator.data else None,
             }

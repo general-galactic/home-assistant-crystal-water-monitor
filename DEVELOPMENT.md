@@ -78,6 +78,26 @@ To tail logs:
 docker logs ha-dev --tail 50 | grep -i crystal
 ```
 
+## Debug logging
+
+To see `_LOGGER.debug(...)` output from this integration (e.g. polling details, API key prefix/environment in use, auth errors):
+
+1. Go to **Settings → Devices & Services**.
+2. Click the **Crystal Water Monitor** integration card, then the **⋮** menu → **Logs**.
+3. On the logs page, enable debug logging for this integration (the toggle/button shown there sets the log level for `custom_components.crystal_water_monitor` to `debug`).
+4. Reproduce the issue (e.g. press a Force Poll button).
+5. View the captured lines on the same logs page, or **Settings → System → Logs** filtered to `crystal_water_monitor`.
+
+If your HA version's logs page doesn't expose a debug-logging toggle, set the level directly via **Developer Tools → Actions**:
+
+1. Search for and select the `logger.set_level` action.
+2. Switch to YAML mode and enter:
+
+   ```yaml
+   custom_components.crystal_water_monitor: debug
+   ```
+3. Run the action — it takes effect immediately and lasts until HA restarts.
+
 ## Releases
 
 Use the release script to bump the version, commit, and tag:

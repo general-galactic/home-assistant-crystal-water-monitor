@@ -260,7 +260,9 @@ class PollingSensor(CrystalSensorBase):
 
     @property
     def native_value(self) -> str:
-        return "Inactive" if self.coordinator.inactive else "Active"
+        if self.coordinator.inactive or self.coordinator.auth_failed:
+            return "Inactive"
+        return "Active"
 
     @property
     def available(self) -> bool:
