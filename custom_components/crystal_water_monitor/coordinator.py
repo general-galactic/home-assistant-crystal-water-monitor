@@ -4,7 +4,6 @@ import logging
 from datetime import datetime, timedelta, timezone
 
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import (
@@ -66,7 +65,9 @@ class CrystalVesselCoordinator(DataUpdateCoordinator[ConnectApiAccountVesselV1 |
                 err,
             )
             self.auth_failed = True
-            raise ConfigEntryAuthFailed("Crystal API rejected the configured API key") from err
+            if self.config_entry is not None:
+                self.config_entry.async_start_reauth(self.hass)
+            return self.data
         except CrystalNotFoundError:
             _LOGGER.warning("Vessel %s not found; marking inactive", self.vessel_id)
             self.inactive = True
