@@ -44,10 +44,9 @@ class CrystalVesselCoordinator(DataUpdateCoordinator[ConnectApiAccountVesselV1 |
 
     async def _async_update_data(self) -> ConnectApiAccountVesselV1 | None:
         _LOGGER.debug(
-            "Polling vessel %s (env=%s, key_prefix=%s...)",
+            "Polling vessel %s (env=%s)",
             self.vessel_id,
             self.client.environment,
-            self.client.key_prefix,
         )
         try:
             data = await self.client.get_vessel(self.vessel_id)
@@ -58,10 +57,9 @@ class CrystalVesselCoordinator(DataUpdateCoordinator[ConnectApiAccountVesselV1 |
             return data
         except CrystalAuthError as err:
             _LOGGER.warning(
-                "Auth error fetching vessel %s (env=%s, key_prefix=%s...): %s; triggering reauth",
+                "Auth error fetching vessel %s (env=%s): %s; triggering reauth",
                 self.vessel_id,
                 self.client.environment,
-                self.client.key_prefix,
                 err,
             )
             self.auth_failed = True
