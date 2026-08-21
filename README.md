@@ -46,5 +46,3 @@ Thanks to Max Herrera for getting us started on this project and helping us get 
 [Terms of Service](https://crystalwatermonitor.com/policies/terms-of-service)
 
 [Privacy Policy](https://crystalwatermonitor.com/policies/privacy-policy)
-
-> **Proprietary Software** — This integration is not open source. Copying, modification, or redistribution is prohibited. See [LICENSE](LICENSE) for details.
