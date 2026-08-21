@@ -11,7 +11,6 @@ from .connect_api.models.connect_api_account_vessel_summary_v1 import (
 )
 from .connect_api.models.connect_api_account_vessel_v1 import ConnectApiAccountVesselV1
 from .connect_api.models.connect_api_reading_v1 import ConnectAPIReadingV1
-
 from .const import BASE_URLS
 
 # Re-export the generated models so the rest of the component imports from here

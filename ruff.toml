@@ -1,4 +1,4 @@
-exclude = ["custom_components/crystal_water_monitor/connect-api"]
+exclude = ["custom_components/crystal_water_monitor/connect_api"]
 
 [lint]
 select = ["E", "F", "W", "I", "UP", "B", "BLE"]
