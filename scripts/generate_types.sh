@@ -16,7 +16,9 @@ case "$ENV" in
     ;;
 esac
 
-OUT="custom_components/crystal_water_monitor/connect-api"
+GEN_DIR="$(mktemp -d)"
+trap 'rm -rf "$GEN_DIR"' EXIT
+PKG_DIR="custom_components/crystal_water_monitor/connect_api"
 
 if ! command -v openapi-generator &>/dev/null; then
   echo "openapi-generator not found. Install with: brew install openapi-generator"
@@ -24,15 +26,20 @@ if ! command -v openapi-generator &>/dev/null; then
 fi
 
 echo "Generating client from $SPEC_URL..."
-rm -rf "$OUT"
 openapi-generator generate \
   -i "$SPEC_URL" \
   -g python \
   --library asyncio \
-  -o "$OUT" \
+  -o "$GEN_DIR" \
   --package-name connect_api \
   --additional-properties=generateSourceCodeOnly=true
 
-rm -rf "$OUT/connect_api/docs" "$OUT/connect_api/test" "$OUT"/*.md
+rm -rf "$GEN_DIR/connect_api/docs" "$GEN_DIR/connect_api/test"
 
-echo "Done. Review $OUT for any changes."
+echo "Rewriting absolute imports to relative..."
+python3 "$(dirname "$0")/rewrite_relative_imports.py" "$GEN_DIR/connect_api"
+
+rm -rf "$PKG_DIR"
+mv "$GEN_DIR/connect_api" "$PKG_DIR"
+
+echo "Done. Review $PKG_DIR for any changes."

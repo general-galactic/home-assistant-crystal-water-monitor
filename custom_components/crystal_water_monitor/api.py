@@ -1,20 +1,16 @@
 from __future__ import annotations
 
 import json
-import os
-import sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "connect-api"))
-
-from connect_api.api.default_api import DefaultApi
-from connect_api.api_client import ApiClient
-from connect_api.configuration import Configuration
-from connect_api.exceptions import ApiException
-from connect_api.models.connect_api_account_vessel_summary_v1 import (
+from .connect_api.api.default_api import DefaultApi
+from .connect_api.api_client import ApiClient
+from .connect_api.configuration import Configuration
+from .connect_api.exceptions import ApiException
+from .connect_api.models.connect_api_account_vessel_summary_v1 import (
     ConnectApiAccountVesselSummaryV1,
 )
-from connect_api.models.connect_api_account_vessel_v1 import ConnectApiAccountVesselV1
-from connect_api.models.connect_api_reading_v1 import ConnectAPIReadingV1
+from .connect_api.models.connect_api_account_vessel_v1 import ConnectApiAccountVesselV1
+from .connect_api.models.connect_api_reading_v1 import ConnectAPIReadingV1
 
 from .const import BASE_URLS
 

@@ -1,7 +1,7 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from connect_api.exceptions import ApiException
+from custom_components.crystal_water_monitor.connect_api.exceptions import ApiException
 
 from custom_components.crystal_water_monitor.api import (
     CrystalApiClient,

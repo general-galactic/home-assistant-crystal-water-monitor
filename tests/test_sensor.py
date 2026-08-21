@@ -5,9 +5,15 @@ from datetime import datetime, timezone
 from unittest.mock import MagicMock
 
 import pytest
-from connect_api.models.reading_sources_v1 import ReadingSourcesV1
-from connect_api.models.reading_statuses import ReadingStatuses
-from connect_api.models.water_status_color import WaterStatusColor
+from custom_components.crystal_water_monitor.connect_api.models.reading_sources_v1 import (
+    ReadingSourcesV1,
+)
+from custom_components.crystal_water_monitor.connect_api.models.reading_statuses import (
+    ReadingStatuses,
+)
+from custom_components.crystal_water_monitor.connect_api.models.water_status_color import (
+    WaterStatusColor,
+)
 
 from custom_components.crystal_water_monitor.sensor import (
     ActionsPendingSensor,
