@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.config_entries import SOURCE_REAUTH
@@ -76,7 +78,9 @@ class CrystalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: igno
             else:
                 data = dict(user_input)
                 data.setdefault(CONF_ENVIRONMENT, "production")
-                await self.async_set_unique_id(user_input[CONF_API_KEY])
+                await self.async_set_unique_id(
+                    hashlib.sha256(user_input[CONF_API_KEY].encode()).hexdigest()
+                )
                 if self.source == SOURCE_REAUTH:
                     return self.async_update_reload_and_abort(
                         self._get_reauth_entry(), data=data
