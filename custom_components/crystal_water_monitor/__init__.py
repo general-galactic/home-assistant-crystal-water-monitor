@@ -124,7 +124,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
 
     stored_vessel_ids: list[int] = list(config.get(CONF_VESSEL_IDS) or [])
-    _LOGGER.warning("async_setup_entry running; stored_vessel_ids=%s", stored_vessel_ids)
+    _LOGGER.debug("async_setup_entry running; stored_vessel_ids=%s", stored_vessel_ids)
     try:
         vessels = await client.list_vessels()
     except CrystalAuthError as err:
@@ -132,32 +132,26 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         raise ConfigEntryAuthFailed("Crystal API rejected the configured API key") from err
     except CrystalApiError as err:
         await client.close()
-        if stored_vessel_ids:
-            # Fall back to the last-known vessel list rather than failing setup
-            # entirely on a transient API error.
-            _LOGGER.warning("Error listing vessels, using cached vessel list: %s", err)
-            vessel_ids = stored_vessel_ids
-        else:
-            raise ConfigEntryNotReady(f"Error communicating with Crystal API: {err}") from err
-    else:
-        vessel_ids = [v.vessel_id for v in vessels]
-        _LOGGER.warning("list_vessels returned vessel_ids=%s", vessel_ids)
-        if vessel_ids != stored_vessel_ids:
-            hass.config_entries.async_update_entry(
-                entry, data={**entry.data, CONF_VESSEL_IDS: vessel_ids}
+        raise ConfigEntryNotReady(f"Error communicating with Crystal API: {err}") from err
+
+    vessel_ids = [v.vessel_id for v in vessels]
+    _LOGGER.debug("list_vessels returned vessel_ids=%s", vessel_ids)
+    if vessel_ids != stored_vessel_ids:
+        hass.config_entries.async_update_entry(
+            entry, data={**entry.data, CONF_VESSEL_IDS: vessel_ids}
+        )
+    removed_vessel_ids = set(stored_vessel_ids) - set(vessel_ids)
+    if removed_vessel_ids:
+        device_registry = dr.async_get(hass)
+        for vessel_id in removed_vessel_ids:
+            device = device_registry.async_get_device(
+                identifiers={(DOMAIN, str(vessel_id))}
             )
-        removed_vessel_ids = set(stored_vessel_ids) - set(vessel_ids)
-        if removed_vessel_ids:
-            device_registry = dr.async_get(hass)
-            for vessel_id in removed_vessel_ids:
-                device = device_registry.async_get_device(
-                    identifiers={(DOMAIN, str(vessel_id))}
+            if device is not None:
+                _LOGGER.info(
+                    "Vessel %s no longer present in account; removing device", vessel_id
                 )
-                if device is not None:
-                    _LOGGER.info(
-                        "Vessel %s no longer present in account; removing device", vessel_id
-                    )
-                    device_registry.async_remove_device(device.id)
+                device_registry.async_remove_device(device.id)
 
     coordinators: dict[int, CrystalVesselCoordinator] = {}
     for vessel_id in vessel_ids:
