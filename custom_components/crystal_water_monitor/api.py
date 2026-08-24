@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 
+import aiohttp
+
 from .connect_api.api.default_api import DefaultApi
 from .connect_api.api_client import ApiClient
 from .connect_api.configuration import Configuration
@@ -70,12 +72,16 @@ class CrystalApiClient:
             return result.vessels
         except ApiException as err:
             raise self._map(err) from err
+        except (aiohttp.ClientError, TimeoutError) as err:
+            raise CrystalApiError(str(err)) from err
 
     async def get_vessel(self, vessel_id: int) -> ConnectApiAccountVesselV1:
         try:
             return await self._api.connect_v1_vessels_vessel_id_get(str(vessel_id))
         except ApiException as err:
             raise self._map(err) from err
+        except (aiohttp.ClientError, TimeoutError) as err:
+            raise CrystalApiError(str(err)) from err
 
     def _server_message(self, err: ApiException) -> str:
         try:

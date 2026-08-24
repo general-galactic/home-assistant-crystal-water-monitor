@@ -124,6 +124,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
 
     stored_vessel_ids: list[int] = list(config.get(CONF_VESSEL_IDS) or [])
+    _LOGGER.warning("async_setup_entry running; stored_vessel_ids=%s", stored_vessel_ids)
     try:
         vessels = await client.list_vessels()
     except CrystalAuthError as err:
@@ -140,6 +141,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             raise ConfigEntryNotReady(f"Error communicating with Crystal API: {err}") from err
     else:
         vessel_ids = [v.vessel_id for v in vessels]
+        _LOGGER.warning("list_vessels returned vessel_ids=%s", vessel_ids)
         if vessel_ids != stored_vessel_ids:
             hass.config_entries.async_update_entry(
                 entry, data={**entry.data, CONF_VESSEL_IDS: vessel_ids}
