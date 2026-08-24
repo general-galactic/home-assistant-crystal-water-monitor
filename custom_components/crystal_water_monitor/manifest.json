@@ -19,5 +19,5 @@
     "aiohttp-retry>=2.9.1"
   ],
   "single_config_entry": true,
-  "version": "1.0.20"
+  "version": "1.0.21"
 }
