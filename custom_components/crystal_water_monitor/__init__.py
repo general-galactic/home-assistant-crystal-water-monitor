@@ -107,6 +107,16 @@ def _get_config(entry: ConfigEntry) -> dict:
     return {**entry.data, **entry.options}
 
 
+def _vessel_id_from_device(device: dr.DeviceEntry) -> int | None:
+    for domain, identifier in device.identifiers:
+        if domain == DOMAIN:
+            try:
+                return int(identifier)
+            except ValueError:
+                return None
+    return None
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})
     if not hass.data.get(f"{DOMAIN}_static_registered"):
@@ -140,18 +150,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.config_entries.async_update_entry(
             entry, data={**entry.data, CONF_VESSEL_IDS: vessel_ids}
         )
-    removed_vessel_ids = set(stored_vessel_ids) - set(vessel_ids)
-    if removed_vessel_ids:
-        device_registry = dr.async_get(hass)
-        for vessel_id in removed_vessel_ids:
-            device = device_registry.async_get_device(
-                identifiers={(DOMAIN, str(vessel_id))}
+
+    # Remove any device registered under this entry whose vessel is no
+    # longer returned by the API, regardless of whether it was tracked in
+    # stored_vessel_ids (catches devices orphaned by earlier testing/bugs).
+    device_registry = dr.async_get(hass)
+    current_vessel_ids = set(vessel_ids)
+    for device in dr.async_entries_for_config_entry(device_registry, entry.entry_id):
+        device_vessel_id = _vessel_id_from_device(device)
+        if device_vessel_id is not None and device_vessel_id not in current_vessel_ids:
+            _LOGGER.info(
+                "Vessel %s no longer present in account; removing device", device_vessel_id
             )
-            if device is not None:
-                _LOGGER.info(
-                    "Vessel %s no longer present in account; removing device", vessel_id
-                )
-                device_registry.async_remove_device(device.id)
+            device_registry.async_remove_device(device.id)
 
     coordinators: dict[int, CrystalVesselCoordinator] = {}
     for vessel_id in vessel_ids:
