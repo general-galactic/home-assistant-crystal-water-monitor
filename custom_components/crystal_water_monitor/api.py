@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import aiohttp
 
@@ -14,6 +15,11 @@ from .connect_api.models.connect_api_account_vessel_summary_v1 import (
 from .connect_api.models.connect_api_account_vessel_v1 import ConnectApiAccountVesselV1
 from .connect_api.models.connect_api_reading_v1 import ConnectAPIReadingV1
 from .const import BASE_URLS
+
+try:
+    _VERSION = json.loads((Path(__file__).parent / "manifest.json").read_text())["version"]
+except Exception:  # noqa: BLE001
+    _VERSION = "0"
 
 # Re-export the generated models so the rest of the component imports from here
 __all__ = [
@@ -60,6 +66,7 @@ class CrystalApiClient:
         self.base_url = BASE_URLS[environment]
         config = Configuration(host=self.base_url, api_key={"ApiKeyAuth": api_key})
         self._client = ApiClient(configuration=config)
+        self._client.user_agent = f"crystal_water_monitor_ha/{_VERSION}"
         self._client.default_headers["Accept-Language"] = locale
         self._api = DefaultApi(api_client=self._client)
 
