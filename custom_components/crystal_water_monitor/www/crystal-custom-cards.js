@@ -146,6 +146,25 @@ function _wordmarkUrl() {
   return "/crystal_water_monitor/images/CWM_icon_wordmark_color.svg";
 }
 
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  }[c]));
+}
+
+function sanitizeImageUrl(value) {
+  try {
+    const url = new URL(String(value ?? ""), window.location.origin);
+    return ["http:", "https:"].includes(url.protocol) ? url.href : "";
+  } catch {
+    return "";
+  }
+}
+
 // --- Editor ---
 
 class CrystalDiscCardEditor extends HTMLElement {
@@ -373,11 +392,11 @@ class CrystalDiscCard extends HTMLElement {
     const disc = entity.attributes;
     const color = disc.waterStatusColor || "gray";
     const discUrl = this._discUrl(color);
-    const name = disc.name || entity.attributes.friendly_name || "";
-    const text = disc.text || entity.state || "";
-    const vesselId = disc.vesselId;
+    const name = escapeHtml(disc.name || entity.attributes.friendly_name || "");
+    const text = escapeHtml(disc.text || entity.state || "");
+    const vesselId = escapeHtml(disc.vesselId);
     const isMobileApp = /HomeAssistant\/\d/.test(navigator.userAgent);
-    const appUrl = isMobileApp && vesselId ? `https://cwmu.us/app/vessels/${vesselId}` : null;
+    const appUrl = isMobileApp && disc.vesselId ? `https://cwmu.us/app/vessels/${vesselId}` : null;
 
     const lastUpdated = this._relativeTime(disc.lastUpdatedDate);
     const deviceId = this._config?.device_id;
@@ -561,8 +580,8 @@ class CrystalActionsCard extends HTMLElement {
     }
 
     const actions = entity.attributes.actions || [];
-    const vesselName = entity.attributes.name || "";
-    const vesselId = entity.attributes.vesselId;
+    const vesselName = escapeHtml(entity.attributes.name || "");
+    const vesselId = escapeHtml(entity.attributes.vesselId);
     const showDetails = this._config?.show_details !== false;
     const showIcons = this._config?.show_icons !== false;
     const showLogo = this._config?.show_logo !== false;
@@ -578,10 +597,10 @@ class CrystalActionsCard extends HTMLElement {
             border-bottom: 1px solid var(--divider-color);
             gap: 12px;
           ">
-            ${showIcons && a.iconUrl ? `<img src="${a.iconUrl}" style="width:36px;height:36px;border-radius:50%;flex-shrink:0;" />` : ""}
+            ${showIcons && a.iconUrl ? `<img src="${escapeHtml(sanitizeImageUrl(a.iconUrl))}" style="width:36px;height:36px;border-radius:50%;flex-shrink:0;" />` : ""}
             <div>
-              <div style="font-size:14px;font-weight:600;">${a.title || ""}</div>
-              ${showDetails && a.details ? `<div style="font-size:12px;color:var(--secondary-text-color);margin-top:2px;">${a.details}</div>` : ""}
+              <div style="font-size:14px;font-weight:600;">${escapeHtml(a.title || "")}</div>
+              ${showDetails && a.details ? `<div style="font-size:12px;color:var(--secondary-text-color);margin-top:2px;">${escapeHtml(a.details)}</div>` : ""}
             </div>
           </div>
         `).join("");
