@@ -13,7 +13,7 @@
   ],
   "documentation": "https://crystalwatermonitor.com/pages/integrations",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/generalgalactic/home-assistant-plugin/issues",
+  "issue_tracker": "https://github.com/general-galactic/home-assistant-crystal-water-monitor/issues",
   "requirements": [
     "pydantic>=2.10.4",
     "aiohttp-retry>=2.9.1"
